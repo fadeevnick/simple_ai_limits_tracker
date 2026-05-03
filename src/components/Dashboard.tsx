@@ -50,7 +50,7 @@ function ModalShell({ open, onClose, children }: { open: boolean; onClose: () =>
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
       <div
-        className="bg-white border border-[#d8d8e0] rounded-lg w-full max-w-md"
+        className="bg-[var(--surface)] border border-[var(--border)] rounded-lg w-full max-w-md"
         onClick={(e) => e.stopPropagation()}
       >
         {children}
@@ -107,7 +107,7 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+                className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
               />
             </div>
 
@@ -132,7 +132,7 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
                   max={999}
                   value={hours}
                   onChange={(e) => setHours(Number(e.target.value))}
-                  className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+                  className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
                 />
                 <span className="text-base text-gray-400">h</span>
                 <input
@@ -141,7 +141,7 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
                   max={59}
                   value={minutes}
                   onChange={(e) => setMinutes(Number(e.target.value))}
-                  className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+                  className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
                 />
                 <span className="text-base text-gray-400">m</span>
               </div>
@@ -149,17 +149,17 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
           </div>
         </div>
 
-        <div className="flex items-center gap-3 border-t border-[#d8d8e0] px-8 py-4">
+        <div className="flex items-center gap-3 border-t border-[var(--border)] px-8 py-4">
           {showDelete && onDelete && (
             <button type="button" onClick={() => { onDelete(); onClose(); }} className="px-4 py-2 text-sm border border-red-200 rounded-md text-red-600 hover:bg-red-50 hover:border-red-300">
               Delete
             </button>
           )}
           <div className="flex-1" />
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0]">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[var(--border)] rounded-md text-gray-600 hover:bg-[var(--hover)]">
             Cancel
           </button>
-          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]">
+          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[var(--primary)] text-[var(--primary-text)] rounded-md hover:bg-[var(--primary-hover)]">
             Save
           </button>
         </div>
@@ -205,13 +205,13 @@ function ServiceModal({ open, initial, onSubmit, onClose }: ServiceModalProps) {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+              className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
             />
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-[#d8d8e0] px-8 py-4">
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0]">Cancel</button>
-          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]">Add</button>
+        <div className="flex justify-end gap-3 border-t border-[var(--border)] px-8 py-4">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[var(--border)] rounded-md text-gray-600 hover:bg-[var(--hover)]">Cancel</button>
+          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[var(--primary)] text-[var(--primary-text)] rounded-md hover:bg-[var(--primary-hover)]">Add</button>
         </div>
       </form>
     </ModalShell>
@@ -261,7 +261,7 @@ function LifeLimitModal({ open, title, initial, onSubmit, onClose, showDelete, o
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+                className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
               />
             </div>
             <div>
@@ -270,20 +270,20 @@ function LifeLimitModal({ open, title, initial, onSubmit, onClose, showDelete, o
                 type="datetime-local"
                 value={deadline}
                 onChange={(e) => setDeadline(e.target.value)}
-                className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+                className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
               />
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 border-t border-[#d8d8e0] px-8 py-4">
+        <div className="flex items-center gap-3 border-t border-[var(--border)] px-8 py-4">
           {showDelete && onDelete && (
             <button type="button" onClick={() => { onDelete(); onClose(); }} className="px-4 py-2 text-sm border border-red-200 rounded-md text-red-600 hover:bg-red-50 hover:border-red-300">
               Delete
             </button>
           )}
           <div className="flex-1" />
-          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0]">Cancel</button>
-          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]">Save</button>
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[var(--border)] rounded-md text-gray-600 hover:bg-[var(--hover)]">Cancel</button>
+          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[var(--primary)] text-[var(--primary-text)] rounded-md hover:bg-[var(--primary-hover)]">Save</button>
         </div>
       </form>
     </ModalShell>
@@ -312,9 +312,9 @@ function AccountRow({ account, onEdit, onDelete }: AccountRowProps) {
   return (
     <div className="flex items-center gap-4 py-3">
       <span className="text-base w-40 truncate">{account.name}</span>
-      <div className="flex-1 h-2 bg-[#e0e0e8] rounded-full overflow-hidden">
+      <div className="flex-1 h-2 bg-[var(--tab-inactive)] rounded-full overflow-hidden">
         <div
-          className="h-full bg-[#5a5a8a]/50 rounded-full transition-all duration-500"
+          className="h-full bg-[var(--fill)]/50 rounded-full transition-all duration-500"
           style={{ width: `${displayPercent}%` }}
         />
       </div>
@@ -325,8 +325,8 @@ function AccountRow({ account, onEdit, onDelete }: AccountRowProps) {
         {timeLabel}
       </span>
       <div className="flex gap-2">
-        <button onClick={() => onEdit(account)} className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0] hover:border-gray-400">edit</button>
-        <button onClick={() => onDelete(account.id)} className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:text-red-500 hover:border-red-500/30 hover:bg-red-50">del</button>
+        <button onClick={() => onEdit(account)} className="px-3 py-1.5 text-sm border border-[var(--border)] rounded-md text-gray-600 hover:bg-[var(--hover)] hover:border-gray-400">edit</button>
+        <button onClick={() => onDelete(account.id)} className="px-3 py-1.5 text-sm border border-[var(--border)] rounded-md text-gray-600 hover:text-red-500 hover:border-red-500/30 hover:bg-red-50">del</button>
       </div>
     </div>
   );
@@ -364,19 +364,19 @@ function ServiceGroup({
   });
 
   return (
-    <div className="border border-[#d8d8e0] rounded-lg p-6">
+    <div className="border border-[var(--border)] rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">{service.name}</h2>
         <div className="flex gap-2">
           <button
             onClick={() => onAddAccount(service.id)}
-            className="px-4 py-2 text-sm border border-[#d8d8e0] rounded-md text-gray-500 hover:text-[#1a1a2e] hover:border-gray-400"
+            className="px-4 py-2 text-sm border border-[var(--border)] rounded-md text-gray-500 hover:text-[var(--text-bright)] hover:border-gray-400"
           >
             + Account
           </button>
           <button
             onClick={() => onDeleteService(service.id)}
-            className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-500 hover:text-red-500 hover:border-red-500/30"
+            className="px-3 py-1.5 text-sm border border-[var(--border)] rounded-md text-gray-500 hover:text-red-500 hover:border-red-500/30"
           >
             delete
           </button>
@@ -423,8 +423,8 @@ function LifeLimitRow({ limit, onEdit, onDelete }: LifeLimitRowProps) {
         })}
       </span>
       <div className="flex gap-2">
-        <button onClick={() => onEdit(limit)} className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0] hover:border-gray-400">edit</button>
-        <button onClick={() => onDelete(limit.id)} className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:text-red-500 hover:border-red-500/30 hover:bg-red-50">del</button>
+        <button onClick={() => onEdit(limit)} className="px-3 py-1.5 text-sm border border-[var(--border)] rounded-md text-gray-600 hover:bg-[var(--hover)] hover:border-gray-400">edit</button>
+        <button onClick={() => onDelete(limit.id)} className="px-3 py-1.5 text-sm border border-[var(--border)] rounded-md text-gray-600 hover:text-red-500 hover:border-red-500/30 hover:bg-red-50">del</button>
       </div>
     </div>
   );
@@ -502,7 +502,7 @@ function LifeLimitsTab() {
       <div className="flex justify-end mb-6">
         <button
           onClick={openAdd}
-          className="px-5 py-2.5 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]"
+          className="px-5 py-2.5 text-sm font-medium bg-[var(--primary)] text-[var(--primary-text)] rounded-md hover:bg-[var(--primary-hover)]"
         >
           + Event
         </button>
@@ -512,7 +512,7 @@ function LifeLimitsTab() {
           <p>No events yet. Add one to get started.</p>
         </div>
       ) : (
-        <div className="border border-[#d8d8e0] rounded-lg p-6">
+        <div className="border border-[var(--border)] rounded-lg p-6">
           {sorted.map((l) => (
             <LifeLimitRow key={l.id} limit={l} onEdit={openEdit} onDelete={deleteLimit} />
           ))}
@@ -649,8 +649,8 @@ export default function Dashboard() {
           onClick={() => setTab("ai")}
           className={`px-5 py-2.5 text-sm font-medium rounded-md transition-colors ${
             tab === "ai"
-              ? "bg-[#3a3a5c] text-[#f0f0f0]"
-              : "bg-[#e0e0e8] text-gray-600 hover:bg-[#d0d0d8]"
+              ? "bg-[var(--primary)] text-[var(--primary-text)]"
+              : "bg-[var(--tab-inactive)] text-gray-600 hover:bg-[var(--tab-hover)]"
           }`}
         >
           AI Limits
@@ -659,8 +659,8 @@ export default function Dashboard() {
           onClick={() => setTab("life")}
           className={`px-5 py-2.5 text-sm font-medium rounded-md transition-colors ${
             tab === "life"
-              ? "bg-[#3a3a5c] text-[#f0f0f0]"
-              : "bg-[#e0e0e8] text-gray-600 hover:bg-[#d0d0d8]"
+              ? "bg-[var(--primary)] text-[var(--primary-text)]"
+              : "bg-[var(--tab-inactive)] text-gray-600 hover:bg-[var(--tab-hover)]"
           }`}
         >
           Life Limits
@@ -673,7 +673,7 @@ export default function Dashboard() {
           <div className="flex justify-end mb-6">
             <button
               onClick={() => setServiceModalOpen(true)}
-              className="px-5 py-2.5 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]"
+              className="px-5 py-2.5 text-sm font-medium bg-[var(--primary)] text-[var(--primary-text)] rounded-md hover:bg-[var(--primary-hover)]"
             >
               + Service
             </button>

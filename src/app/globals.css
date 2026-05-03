@@ -5,9 +5,34 @@
   --font-mono: var(--font-geist-mono);
 }
 
+:root {
+  /* Page */
+  --bg: #f4f4f0;
+  --text: #2a2a3a;
+  --text-bright: #1a1a2e;
+
+  /* Surfaces */
+  --surface: #ffffff;
+  --border: #d8d8e0;
+
+  /* Primary (buttons, active tab) */
+  --primary: #3a3a5c;
+  --primary-hover: #4a4a6c;
+  --primary-text: #f0f0f0;
+
+  /* Interactive (hover states, inactive tab) */
+  --hover: #e8e8f0;
+  --tab-inactive: #e0e0e8;
+  --tab-hover: #d0d0d8;
+
+  /* Progress bar */
+  --track: #e0e0e8;
+  --fill: #5a5a8a;
+}
+
 body {
-  background: #f4f4f0;
-  color: #2a2a3a;
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
@@ -16,7 +41,7 @@ input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
-  background: #d8d8e0;
+  background: var(--border);
   border-radius: 2px;
   outline: none;
 }
@@ -25,14 +50,14 @@ input[type="range"]::-webkit-slider-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #3a3a5c;
+  background: var(--primary);
   cursor: pointer;
 }
 input[type="range"]::-moz-range-thumb {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #3a3a5c;
+  background: var(--primary);
   border: none;
   cursor: pointer;
 }
