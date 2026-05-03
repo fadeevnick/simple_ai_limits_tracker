@@ -1,4 +1,4 @@
-import { Store, Service, Account } from "./types";
+import { Store, Service, Account, LifeLimit } from "./types";
 import { readFileSync, writeFileSync, existsSync } from "fs";
 import { join } from "path";
 
@@ -6,7 +6,7 @@ const DATA_DIR = join(process.cwd(), "..", "data");
 const STORE_PATH = join(DATA_DIR, "store.json");
 
 function getDefaultStore(): Store {
-  return { services: [], accounts: [] };
+  return { services: [], accounts: [], lifeLimits: [] };
 }
 
 export function readStore(): Store {
@@ -15,7 +15,10 @@ export function readStore(): Store {
     return getDefaultStore();
   }
   const raw = readFileSync(STORE_PATH, "utf-8");
-  return JSON.parse(raw) as Store;
+  const data = JSON.parse(raw);
+  // Migration: ensure lifeLimits exists
+  if (!data.lifeLimits) data.lifeLimits = [];
+  return data as Store;
 }
 
 export function writeStore(store: Store): void {
@@ -83,6 +86,36 @@ export function deleteAccount(id: string): boolean {
   const len = store.accounts.length;
   store.accounts = store.accounts.filter((a) => a.id !== id);
   if (store.accounts.length === len) return false;
+  writeStore(store);
+  return true;
+}
+
+export function addLifeLimit(name: string, deadline: string): LifeLimit {
+  const store = readStore();
+  const limit: LifeLimit = { id: crypto.randomUUID(), name, deadline };
+  store.lifeLimits.push(limit);
+  writeStore(store);
+  return limit;
+}
+
+export function updateLifeLimit(
+  id: string,
+  updates: Partial<Pick<LifeLimit, "name" | "deadline">>
+): LifeLimit | null {
+  const store = readStore();
+  const limit = store.lifeLimits.find((l) => l.id === id);
+  if (!limit) return null;
+  if (updates.name !== undefined) limit.name = updates.name;
+  if (updates.deadline !== undefined) limit.deadline = updates.deadline;
+  writeStore(store);
+  return limit;
+}
+
+export function deleteLifeLimit(id: string): boolean {
+  const store = readStore();
+  const len = store.lifeLimits.length;
+  store.lifeLimits = store.lifeLimits.filter((l) => l.id !== id);
+  if (store.lifeLimits.length === len) return false;
   writeStore(store);
   return true;
 }

@@ -11,7 +11,14 @@ export interface Account {
   resetsAt?: string;    // ISO timestamp — когда лимит обнулится
 }
 
+export interface LifeLimit {
+  id: string;
+  name: string;
+  deadline: string; // ISO timestamp
+}
+
 export interface Store {
   services: Service[];
   accounts: Account[];
+  lifeLimits: LifeLimit[];
 }

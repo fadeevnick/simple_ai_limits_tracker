@@ -1,27 +1,28 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Service, Account } from "@/lib/types";
+import { Service, Account, LifeLimit } from "@/lib/types";
+
+/* ─── Helpers ─── */
 
 function formatTimeLeft(resetsAt: string): string {
   const diff = new Date(resetsAt).getTime() - Date.now();
-  if (diff <= 0) return "Ready to reset";
+  if (diff <= 0) return "now";
   const hours = Math.floor(diff / 3600000);
   const minutes = Math.floor((diff % 3600000) / 60000);
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 }
 
-function getBarColor(percent: number): string {
-  if (percent <= 50) return "bg-emerald-500";
-  if (percent <= 80) return "bg-yellow-500";
-  return "bg-red-500";
-}
-
-function getTextColor(percent: number): string {
-  if (percent <= 50) return "text-emerald-400";
-  if (percent <= 80) return "text-yellow-400";
-  return "text-red-400";
+function formatDeadline(deadline: string): string {
+  const diff = new Date(deadline).getTime() - Date.now();
+  if (diff <= 0) return "overdue";
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
 }
 
 function calcResetsAt(hours: number, minutes: number): string {
@@ -42,7 +43,23 @@ function getRemainingHM(resetsAt?: string): { hours: number; minutes: number } {
   };
 }
 
-/* ─── Modal ─── */
+/* ─── Modal shell ─── */
+
+function ModalShell({ open, onClose, children }: { open: boolean; onClose: () => void; children: React.ReactNode }) {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30" onClick={onClose}>
+      <div
+        className="bg-white border border-[#d8d8e0] rounded-lg w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/* ─── AccountModal ─── */
 
 interface AccountModalProps {
   open: boolean;
@@ -71,110 +88,87 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
     }
   }, [open, initial]);
 
-  if (!open) return null;
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit({ name: name.trim(), usagePercent: percent, hours, minutes });
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div
-        className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm shadow-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h3 className="text-lg font-semibold text-gray-100 mb-4">{title}</h3>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Account name</label>
-            <input
-              ref={nameRef}
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Usage percent (0-100)</label>
-            <div className="flex items-center gap-3">
+    <ModalShell open={open} onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <div className="p-8">
+          <h3 className="text-2xl font-bold mb-8">{title}</h3>
+
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Account name</label>
+              <input
+                ref={nameRef}
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Usage — {percent}%</label>
               <input
                 type="range"
                 min={0}
                 max={100}
                 value={percent}
                 onChange={(e) => setPercent(Number(e.target.value))}
-                className="flex-1 accent-blue-500"
-              />
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={percent}
-                onChange={(e) => setPercent(Math.min(100, Math.max(0, Number(e.target.value))))}
-                className="w-16 bg-gray-800 border border-gray-700 rounded-lg px-2 py-1 text-sm text-gray-100 text-center focus:outline-none focus:border-blue-500"
+                className="w-full"
               />
             </div>
-          </div>
-          <div>
-            <label className="block text-xs text-gray-400 mb-1">Resets in</label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
+
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Resets in</label>
+              <div className="flex items-center gap-3">
                 <input
                   type="number"
                   min={0}
                   max={999}
                   value={hours}
                   onChange={(e) => setHours(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
                 />
-              </div>
-              <span className="text-xs text-gray-500">h</span>
-              <div className="flex-1">
+                <span className="text-base text-gray-400">h</span>
                 <input
                   type="number"
                   min={0}
                   max={59}
                   value={minutes}
                   onChange={(e) => setMinutes(Number(e.target.value))}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
                 />
+                <span className="text-base text-gray-400">m</span>
               </div>
-              <span className="text-xs text-gray-500">m</span>
             </div>
           </div>
-          <div className="flex items-center gap-2 pt-2">
-            {showDelete && onDelete && (
-              <button
-                type="button"
-                onClick={() => { onDelete(); onClose(); }}
-                className="text-xs text-red-400 hover:text-red-300 mr-auto"
-              >
-                Delete
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={onClose}
-              className="text-sm text-gray-400 hover:text-gray-200 px-3 py-1.5"
-            >
-              Cancel
+        </div>
+
+        <div className="flex items-center gap-3 border-t border-[#d8d8e0] px-8 py-4">
+          {showDelete && onDelete && (
+            <button type="button" onClick={() => { onDelete(); onClose(); }} className="px-4 py-2 text-sm border border-red-200 rounded-md text-red-600 hover:bg-red-50 hover:border-red-300">
+              Delete
             </button>
-            <button
-              type="submit"
-              className="text-sm bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg"
-            >
-              Save
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          )}
+          <div className="flex-1" />
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0]">
+            Cancel
+          </button>
+          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]">
+            Save
+          </button>
+        </div>
+      </form>
+    </ModalShell>
   );
 }
 
-/* ─── Service name modal ─── */
+/* ─── ServiceModal ─── */
 
 interface ServiceModalProps {
   open: boolean;
@@ -194,43 +188,105 @@ function ServiceModal({ open, initial, onSubmit, onClose }: ServiceModalProps) {
     }
   }, [open, initial]);
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
-      <div
-        className="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm shadow-xl"
-        onClick={(e) => e.stopPropagation()}
+    <ModalShell open={open} onClose={onClose}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (name.trim()) onSubmit(name.trim());
+        }}
       >
-        <h3 className="text-lg font-semibold text-gray-100 mb-4">New service</h3>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (name.trim()) onSubmit(name.trim());
-          }}
-          className="space-y-4"
-        >
+        <div className="p-8">
+          <h3 className="text-2xl font-bold mb-8">New service</h3>
           <div>
-            <label className="block text-xs text-gray-400 mb-1">Service name</label>
+            <label className="block text-sm text-gray-500 mb-2">Service name</label>
             <input
               ref={ref}
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+              className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
             />
           </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="text-sm text-gray-400 hover:text-gray-200 px-3 py-1.5">
-              Cancel
-            </button>
-            <button type="submit" className="text-sm bg-blue-600 hover:bg-blue-500 text-white px-4 py-1.5 rounded-lg">
-              Add
-            </button>
+        </div>
+        <div className="flex justify-end gap-3 border-t border-[#d8d8e0] px-8 py-4">
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0]">Cancel</button>
+          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]">Add</button>
+        </div>
+      </form>
+    </ModalShell>
+  );
+}
+
+/* ─── LifeLimitModal ─── */
+
+interface LifeLimitModalProps {
+  open: boolean;
+  title: string;
+  initial: { name: string; deadline: string };
+  onSubmit: (data: { name: string; deadline: string }) => void;
+  onClose: () => void;
+  showDelete?: boolean;
+  onDelete?: () => void;
+}
+
+function LifeLimitModal({ open, title, initial, onSubmit, onClose, showDelete, onDelete }: LifeLimitModalProps) {
+  const [name, setName] = useState(initial.name);
+  const [deadline, setDeadline] = useState(initial.deadline);
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      setName(initial.name);
+      setDeadline(initial.deadline);
+      setTimeout(() => nameRef.current?.focus(), 50);
+    }
+  }, [open, initial]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (name.trim() && deadline) onSubmit({ name: name.trim(), deadline });
+  };
+
+  return (
+    <ModalShell open={open} onClose={onClose}>
+      <form onSubmit={handleSubmit}>
+        <div className="p-8">
+          <h3 className="text-2xl font-bold mb-8">{title}</h3>
+          <div className="space-y-6">
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Event name</label>
+              <input
+                ref={nameRef}
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Deadline</label>
+              <input
+                type="datetime-local"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+                className="w-full bg-white border border-[#d8d8e0] rounded-md px-4 py-3 text-base text-[#1a1a2e] focus:outline-none focus:border-gray-400"
+              />
+            </div>
           </div>
-        </form>
-      </div>
-    </div>
+        </div>
+        <div className="flex items-center gap-3 border-t border-[#d8d8e0] px-8 py-4">
+          {showDelete && onDelete && (
+            <button type="button" onClick={() => { onDelete(); onClose(); }} className="px-4 py-2 text-sm border border-red-200 rounded-md text-red-600 hover:bg-red-50 hover:border-red-300">
+              Delete
+            </button>
+          )}
+          <div className="flex-1" />
+          <button type="button" onClick={onClose} className="px-4 py-2 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0]">Cancel</button>
+          <button type="submit" className="px-5 py-2 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]">Save</button>
+        </div>
+      </form>
+    </ModalShell>
   );
 }
 
@@ -250,36 +306,28 @@ function AccountRow({ account, onEdit, onDelete }: AccountRowProps) {
   const timeLabel = account.resetsAt && !isExpired(account.resetsAt)
     ? formatTimeLeft(account.resetsAt)
     : isAvailable
-    ? "Available"
+    ? "available"
     : "—";
 
   return (
-    <div className="flex items-center gap-3 py-2 px-3 rounded-lg hover:bg-gray-800/50 group">
-      <span className="text-sm text-gray-300 w-32 truncate">{account.name}</span>
-      <div className="flex-1 h-3 bg-gray-700 rounded-full overflow-hidden">
+    <div className="flex items-center gap-4 py-3">
+      <span className="text-base w-40 truncate">{account.name}</span>
+      <div className="flex-1 h-2 bg-[#e0e0e8] rounded-full overflow-hidden">
         <div
-          className={`h-full rounded-full transition-all duration-500 ${getBarColor(displayPercent)}`}
+          className="h-full bg-[#5a5a8a]/50 rounded-full transition-all duration-500"
           style={{ width: `${displayPercent}%` }}
         />
       </div>
-      <span className={`text-sm font-mono w-14 text-right ${getTextColor(displayPercent)}`}>
+      <span className="text-base font-mono w-16 text-right text-gray-500">
         {displayPercent}%
       </span>
-      <span className={`text-sm font-mono w-28 text-right ${isAvailable ? "text-emerald-400" : "text-gray-300"}`}>
+      <span className="text-base font-mono w-32 text-right">
         {timeLabel}
       </span>
-      <button
-        onClick={() => onEdit(account)}
-        className="text-gray-600 hover:text-gray-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-      >
-        edit
-      </button>
-      <button
-        onClick={() => onDelete(account.id)}
-        className="text-gray-600 hover:text-red-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-      >
-        del
-      </button>
+      <div className="flex gap-2">
+        <button onClick={() => onEdit(account)} className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0] hover:border-gray-400">edit</button>
+        <button onClick={() => onDelete(account.id)} className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:text-red-500 hover:border-red-500/30 hover:bg-red-50">del</button>
+      </div>
     </div>
   );
 }
@@ -316,28 +364,28 @@ function ServiceGroup({
   });
 
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold text-gray-100">{service.name}</h2>
+    <div className="border border-[#d8d8e0] rounded-lg p-6">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold">{service.name}</h2>
         <div className="flex gap-2">
           <button
             onClick={() => onAddAccount(service.id)}
-            className="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-2 py-1 rounded"
+            className="px-4 py-2 text-sm border border-[#d8d8e0] rounded-md text-gray-500 hover:text-[#1a1a2e] hover:border-gray-400"
           >
-            + account
+            + Account
           </button>
           <button
             onClick={() => onDeleteService(service.id)}
-            className="text-xs text-gray-600 hover:text-red-400 px-1"
+            className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-500 hover:text-red-500 hover:border-red-500/30"
           >
             delete
           </button>
         </div>
       </div>
       {sorted.length === 0 ? (
-        <p className="text-xs text-gray-600 py-2">No accounts yet</p>
+        <p className="text-base text-gray-400 py-2">No accounts yet</p>
       ) : (
-        <div className="space-y-1">
+        <div>
           {sorted.map((acc) => (
             <AccountRow
               key={acc.id}
@@ -352,14 +400,148 @@ function ServiceGroup({
   );
 }
 
-/* ─── Dashboard ─── */
+/* ─── LifeLimitRow ─── */
+
+interface LifeLimitRowProps {
+  limit: LifeLimit;
+  onEdit: (limit: LifeLimit) => void;
+  onDelete: (id: string) => void;
+}
+
+function LifeLimitRow({ limit, onEdit, onDelete }: LifeLimitRowProps) {
+  const overdue = new Date(limit.deadline).getTime() < Date.now();
+
+  return (
+    <div className="flex items-center gap-4 py-3">
+      <span className="text-base flex-1 truncate">{limit.name}</span>
+      <span className={`text-base font-mono w-32 text-right ${overdue ? "text-red-600" : ""}`}>
+        {formatDeadline(limit.deadline)}
+      </span>
+      <span className="text-sm font-mono w-40 text-right text-gray-400">
+        {new Date(limit.deadline).toLocaleString("ru-RU", {
+          day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
+        })}
+      </span>
+      <div className="flex gap-2">
+        <button onClick={() => onEdit(limit)} className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:bg-[#e8e8f0] hover:border-gray-400">edit</button>
+        <button onClick={() => onDelete(limit.id)} className="px-3 py-1.5 text-sm border border-[#d8d8e0] rounded-md text-gray-600 hover:text-red-500 hover:border-red-500/30 hover:bg-red-50">del</button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── LifeLimitsTab ─── */
+
+function LifeLimitsTab() {
+  const [limits, setLimits] = useState<LifeLimit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("Add event");
+  const [modalLimitId, setModalLimitId] = useState<string | null>(null);
+  const [modalInitial, setModalInitial] = useState({ name: "", deadline: "" });
+
+  const fetchLimits = useCallback(async () => {
+    const res = await fetch("/api/life-limits");
+    setLimits(await res.json());
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchLimits();
+    const interval = setInterval(fetchLimits, 30000);
+    return () => clearInterval(interval);
+  }, [fetchLimits]);
+
+  const openAdd = () => {
+    setModalTitle("Add event");
+    setModalLimitId(null);
+    setModalInitial({ name: "", deadline: "" });
+    setModalOpen(true);
+  };
+
+  const openEdit = (limit: LifeLimit) => {
+    setModalTitle("Edit event");
+    setModalLimitId(limit.id);
+    const dt = new Date(limit.deadline);
+    const local = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}T${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+    setModalInitial({ name: limit.name, deadline: local });
+    setModalOpen(true);
+  };
+
+  const submitLimit = async (data: { name: string; deadline: string }) => {
+    const iso = new Date(data.deadline).toISOString();
+    if (modalLimitId) {
+      await fetch(`/api/life-limits/${modalLimitId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: data.name, deadline: iso }),
+      });
+    } else {
+      await fetch("/api/life-limits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: data.name, deadline: iso }),
+      });
+    }
+    setModalOpen(false);
+    fetchLimits();
+  };
+
+  const deleteLimit = async (id: string) => {
+    await fetch(`/api/life-limits/${id}`, { method: "DELETE" });
+    setModalOpen(false);
+    fetchLimits();
+  };
+
+  if (loading) return <div className="text-gray-500 text-center py-24">Loading...</div>;
+
+  const sorted = [...limits].sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+
+  return (
+    <div>
+      <div className="flex justify-end mb-6">
+        <button
+          onClick={openAdd}
+          className="px-5 py-2.5 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]"
+        >
+          + Event
+        </button>
+      </div>
+      {sorted.length === 0 ? (
+        <div className="text-center py-24 text-gray-400">
+          <p>No events yet. Add one to get started.</p>
+        </div>
+      ) : (
+        <div className="border border-[#d8d8e0] rounded-lg p-6">
+          {sorted.map((l) => (
+            <LifeLimitRow key={l.id} limit={l} onEdit={openEdit} onDelete={deleteLimit} />
+          ))}
+        </div>
+      )}
+
+      <LifeLimitModal
+        open={modalOpen}
+        title={modalTitle}
+        initial={modalInitial}
+        onSubmit={submitLimit}
+        onClose={() => setModalOpen(false)}
+        showDelete={!!modalLimitId}
+        onDelete={modalLimitId ? () => deleteLimit(modalLimitId) : undefined}
+      />
+    </div>
+  );
+}
+
+/* ─── Dashboard (tabs) ─── */
+
+type Tab = "ai" | "life";
 
 export default function Dashboard() {
+  const [tab, setTab] = useState<Tab>("ai");
   const [services, setServices] = useState<Service[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal state
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("Edit account");
@@ -384,7 +566,6 @@ export default function Dashboard() {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  // Service actions
   const addService = async (name: string) => {
     await fetch("/api/services", {
       method: "POST",
@@ -399,7 +580,6 @@ export default function Dashboard() {
     fetchData();
   };
 
-  // Account actions
   const openAddAccount = (serviceId: string) => {
     setModalTitle("Add account");
     setModalAccountId(null);
@@ -428,14 +608,12 @@ export default function Dashboard() {
     const resetsAt = data.hours > 0 || data.minutes > 0 ? calcResetsAt(data.hours, data.minutes) : undefined;
 
     if (modalAccountId) {
-      // edit
       await fetch(`/api/accounts/${modalAccountId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: data.name, usagePercent: data.usagePercent, resetsAt }),
       });
     } else if (modalServiceId) {
-      // add
       await fetch("/api/accounts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -458,38 +636,70 @@ export default function Dashboard() {
   };
 
   if (loading) {
-    return <div className="text-gray-500 text-center py-20">Loading...</div>;
+    return <div className="text-gray-500 text-center py-24">Loading...</div>;
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-8 px-4">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-100">AI Limits</h1>
+    <div className="max-w-3xl mx-auto px-8 py-12">
+      <h1 className="text-3xl font-bold mb-8">Limits</h1>
+
+      {/* Tabs */}
+      <div className="flex gap-2 mb-8">
         <button
-          onClick={() => setServiceModalOpen(true)}
-          className="bg-blue-600 hover:bg-blue-500 text-white text-sm px-3 py-1.5 rounded-lg"
+          onClick={() => setTab("ai")}
+          className={`px-5 py-2.5 text-sm font-medium rounded-md transition-colors ${
+            tab === "ai"
+              ? "bg-[#3a3a5c] text-[#f0f0f0]"
+              : "bg-[#e0e0e8] text-gray-600 hover:bg-[#d0d0d8]"
+          }`}
         >
-          + Service
+          AI Limits
+        </button>
+        <button
+          onClick={() => setTab("life")}
+          className={`px-5 py-2.5 text-sm font-medium rounded-md transition-colors ${
+            tab === "life"
+              ? "bg-[#3a3a5c] text-[#f0f0f0]"
+              : "bg-[#e0e0e8] text-gray-600 hover:bg-[#d0d0d8]"
+          }`}
+        >
+          Life Limits
         </button>
       </div>
-      {services.length === 0 ? (
-        <div className="text-center py-20 text-gray-600">
-          <p>No services yet. Add one to get started.</p>
-        </div>
+
+      {/* Tab content */}
+      {tab === "ai" ? (
+        <>
+          <div className="flex justify-end mb-6">
+            <button
+              onClick={() => setServiceModalOpen(true)}
+              className="px-5 py-2.5 text-sm font-medium bg-[#3a3a5c] text-[#f0f0f0] rounded-md hover:bg-[#4a4a6c]"
+            >
+              + Service
+            </button>
+          </div>
+          {services.length === 0 ? (
+            <div className="text-center py-24 text-gray-400">
+              <p>No services yet. Add one to get started.</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {services.map((service) => (
+                <ServiceGroup
+                  key={service.id}
+                  service={service}
+                  accounts={accounts.filter((a) => a.serviceId === service.id)}
+                  onAddAccount={openAddAccount}
+                  onEditAccount={openEditAccount}
+                  onDeleteAccount={deleteAccount}
+                  onDeleteService={deleteService}
+                />
+              ))}
+            </div>
+          )}
+        </>
       ) : (
-        <div className="space-y-4">
-          {services.map((service) => (
-            <ServiceGroup
-              key={service.id}
-              service={service}
-              accounts={accounts.filter((a) => a.serviceId === service.id)}
-              onAddAccount={openAddAccount}
-              onEditAccount={openEditAccount}
-              onDeleteAccount={deleteAccount}
-              onDeleteService={deleteService}
-            />
-          ))}
-        </div>
+        <LifeLimitsTab />
       )}
 
       <ServiceModal
