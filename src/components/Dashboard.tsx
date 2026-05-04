@@ -8,8 +8,10 @@ import { Service, Account, LifeLimit } from "@/lib/types";
 function formatTimeLeft(resetsAt: string): string {
   const diff = new Date(resetsAt).getTime() - Date.now();
   if (diff <= 0) return "now";
-  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
   const minutes = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`;
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
 }
@@ -25,8 +27,8 @@ function formatDeadline(deadline: string): string {
   return `${minutes}m`;
 }
 
-function calcResetsAt(hours: number, minutes: number): string {
-  return new Date(Date.now() + hours * 3600000 + minutes * 60000).toISOString();
+function calcResetsAt(days: number, hours: number, minutes: number): string {
+  return new Date(Date.now() + days * 86400000 + hours * 3600000 + minutes * 60000).toISOString();
 }
 
 function isExpired(resetsAt?: string): boolean {
@@ -34,11 +36,12 @@ function isExpired(resetsAt?: string): boolean {
   return new Date(resetsAt).getTime() < Date.now();
 }
 
-function getRemainingHM(resetsAt?: string): { hours: number; minutes: number } {
-  if (!resetsAt || isExpired(resetsAt)) return { hours: 0, minutes: 0 };
+function getRemainingDHM(resetsAt?: string): { days: number; hours: number; minutes: number } {
+  if (!resetsAt || isExpired(resetsAt)) return { days: 0, hours: 0, minutes: 0 };
   const diff = new Date(resetsAt).getTime() - Date.now();
   return {
-    hours: Math.floor(diff / 3600000),
+    days: Math.floor(diff / 86400000),
+    hours: Math.floor((diff % 86400000) / 3600000),
     minutes: Math.floor((diff % 3600000) / 60000),
   };
 }
@@ -64,8 +67,8 @@ function ModalShell({ open, onClose, children }: { open: boolean; onClose: () =>
 interface AccountModalProps {
   open: boolean;
   title: string;
-  initial: { name: string; usagePercent: number; hours: number; minutes: number };
-  onSubmit: (data: { name: string; usagePercent: number; hours: number; minutes: number }) => void;
+  initial: { name: string; usagePercent: number; days: number; hours: number; minutes: number };
+  onSubmit: (data: { name: string; usagePercent: number; days: number; hours: number; minutes: number }) => void;
   onClose: () => void;
   showDelete?: boolean;
   onDelete?: () => void;
@@ -74,6 +77,7 @@ interface AccountModalProps {
 function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onDelete }: AccountModalProps) {
   const [name, setName] = useState(initial.name);
   const [percent, setPercent] = useState(initial.usagePercent);
+  const [days, setDays] = useState(initial.days);
   const [hours, setHours] = useState(initial.hours);
   const [minutes, setMinutes] = useState(initial.minutes);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -82,6 +86,7 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
     if (open) {
       setName(initial.name);
       setPercent(initial.usagePercent);
+      setDays(initial.days);
       setHours(initial.hours);
       setMinutes(initial.minutes);
       setTimeout(() => nameRef.current?.focus(), 50);
@@ -90,7 +95,7 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name: name.trim(), usagePercent: percent, hours, minutes });
+    onSubmit({ name: name.trim(), usagePercent: percent, days, hours, minutes });
   };
 
   return (
@@ -129,7 +134,16 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
                 <input
                   type="number"
                   min={0}
-                  max={999}
+                  max={365}
+                  value={days}
+                  onChange={(e) => setDays(Number(e.target.value))}
+                  className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
+                />
+                <span className="text-base text-gray-400">d</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={23}
                   value={hours}
                   onChange={(e) => setHours(Number(e.target.value))}
                   className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
@@ -547,7 +561,7 @@ export default function Dashboard() {
   const [modalTitle, setModalTitle] = useState("Edit account");
   const [modalAccountId, setModalAccountId] = useState<string | null>(null);
   const [modalServiceId, setModalServiceId] = useState<string | null>(null);
-  const [modalInitial, setModalInitial] = useState({ name: "", usagePercent: 0, hours: 0, minutes: 0 });
+  const [modalInitial, setModalInitial] = useState({ name: "", usagePercent: 0, days: 0, hours: 0, minutes: 0 });
   const [modalShowDelete, setModalShowDelete] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -584,19 +598,20 @@ export default function Dashboard() {
     setModalTitle("Add account");
     setModalAccountId(null);
     setModalServiceId(serviceId);
-    setModalInitial({ name: "", usagePercent: 0, hours: 0, minutes: 0 });
+    setModalInitial({ name: "", usagePercent: 0, days: 0, hours: 0, minutes: 0 });
     setModalShowDelete(false);
     setAccountModalOpen(true);
   };
 
   const openEditAccount = (account: Account) => {
-    const rem = getRemainingHM(account.resetsAt);
+    const rem = getRemainingDHM(account.resetsAt);
     setModalTitle("Edit account");
     setModalAccountId(account.id);
     setModalServiceId(account.serviceId);
     setModalInitial({
       name: account.name,
       usagePercent: isExpired(account.resetsAt) ? 0 : account.usagePercent,
+      days: rem.days,
       hours: rem.hours,
       minutes: rem.minutes,
     });
@@ -604,8 +619,8 @@ export default function Dashboard() {
     setAccountModalOpen(true);
   };
 
-  const submitAccount = async (data: { name: string; usagePercent: number; hours: number; minutes: number }) => {
-    const resetsAt = data.hours > 0 || data.minutes > 0 ? calcResetsAt(data.hours, data.minutes) : undefined;
+  const submitAccount = async (data: { name: string; usagePercent: number; days: number; hours: number; minutes: number }) => {
+    const resetsAt = data.days > 0 || data.hours > 0 || data.minutes > 0 ? calcResetsAt(data.days, data.hours, data.minutes) : undefined;
 
     if (modalAccountId) {
       await fetch(`/api/accounts/${modalAccountId}`, {
