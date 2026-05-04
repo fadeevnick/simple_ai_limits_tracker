@@ -77,25 +77,25 @@ interface AccountModalProps {
 function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onDelete }: AccountModalProps) {
   const [name, setName] = useState(initial.name);
   const [percent, setPercent] = useState(initial.usagePercent);
-  const [days, setDays] = useState(initial.days);
-  const [hours, setHours] = useState(initial.hours);
-  const [minutes, setMinutes] = useState(initial.minutes);
+  const [days, setDays] = useState(String(initial.days));
+  const [hours, setHours] = useState(String(initial.hours));
+  const [minutes, setMinutes] = useState(String(initial.minutes));
   const nameRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
       setName(initial.name);
       setPercent(initial.usagePercent);
-      setDays(initial.days);
-      setHours(initial.hours);
-      setMinutes(initial.minutes);
+      setDays(String(initial.days));
+      setHours(String(initial.hours));
+      setMinutes(String(initial.minutes));
       setTimeout(() => nameRef.current?.focus(), 50);
     }
   }, [open, initial]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name: name.trim(), usagePercent: percent, days, hours, minutes });
+    onSubmit({ name: name.trim(), usagePercent: percent, days: Number(days) || 0, hours: Number(hours) || 0, minutes: Number(minutes) || 0 });
   };
 
   return (
@@ -132,29 +132,26 @@ function AccountModal({ open, title, initial, onSubmit, onClose, showDelete, onD
               <label className="block text-sm text-gray-500 mb-2">Resets in</label>
               <div className="flex items-center gap-3">
                 <input
-                  type="number"
-                  min={0}
-                  max={365}
+                  type="text"
+                  inputMode="numeric"
                   value={days}
-                  onChange={(e) => setDays(Number(e.target.value))}
+                  onChange={(e) => setDays(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
                 />
                 <span className="text-base text-gray-400">d</span>
                 <input
-                  type="number"
-                  min={0}
-                  max={23}
+                  type="text"
+                  inputMode="numeric"
                   value={hours}
-                  onChange={(e) => setHours(Number(e.target.value))}
+                  onChange={(e) => setHours(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
                 />
                 <span className="text-base text-gray-400">h</span>
                 <input
-                  type="number"
-                  min={0}
-                  max={59}
+                  type="text"
+                  inputMode="numeric"
                   value={minutes}
-                  onChange={(e) => setMinutes(Number(e.target.value))}
+                  onChange={(e) => setMinutes(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400"
                 />
                 <span className="text-base text-gray-400">m</span>
