@@ -313,6 +313,7 @@ function AccountRow({ account, onEdit, onDelete }: AccountRowProps) {
   const expired = isExpired(account.resetsAt);
   const displayPercent = expired ? 0 : account.usagePercent;
   const isAvailable = displayPercent === 0;
+  const isFull = displayPercent >= 100;
 
   const timeLabel = account.resetsAt && !isExpired(account.resetsAt)
     ? formatTimeLeft(account.resetsAt)
@@ -321,15 +322,15 @@ function AccountRow({ account, onEdit, onDelete }: AccountRowProps) {
     : "—";
 
   return (
-    <div className="flex items-center gap-4 py-3">
-      <span className="text-base w-40 truncate">{account.name}</span>
+    <div className={`flex items-center gap-4 py-3 ${isFull ? "opacity-50" : ""}`}>
+      <span className={`text-base w-40 truncate ${isFull ? "line-through text-gray-400" : ""}`}>{account.name}</span>
       <div className="flex-1 h-2 bg-[var(--tab-inactive)] rounded-full overflow-hidden">
         <div
-          className="h-full bg-[var(--fill)]/50 rounded-full transition-all duration-500"
+          className={`h-full rounded-full transition-all duration-500 ${isFull ? "bg-red-500/70" : "bg-[var(--fill)]/50"}`}
           style={{ width: `${displayPercent}%` }}
         />
       </div>
-      <span className="text-base font-mono w-16 text-right text-gray-500">
+      <span className={`text-base font-mono w-16 text-right ${isFull ? "text-red-500 font-semibold" : "text-gray-500"}`}>
         {displayPercent}%
       </span>
       <span className="text-base font-mono w-32 text-right">
@@ -365,10 +366,13 @@ function ServiceGroup({
   const sorted = [...accounts].sort((a, b) => {
     const aExpired = isExpired(a.resetsAt);
     const bExpired = isExpired(b.resetsAt);
-    const aAvail = aExpired ? 0 : a.usagePercent === 0 ? 0 : 1;
-    const bAvail = bExpired ? 0 : b.usagePercent === 0 ? 0 : 1;
-    if (aAvail !== bAvail) return aAvail - bAvail;
+    const aAvail = aExpired || a.usagePercent === 0;
+    const bAvail = bExpired || b.usagePercent === 0;
+    // available accounts go last
+    if (aAvail !== bAvail) return aAvail ? 1 : -1;
+    // both have resetsAt — sort by soonest first
     if (a.resetsAt && b.resetsAt) return new Date(a.resetsAt).getTime() - new Date(b.resetsAt).getTime();
+    // only one has resetsAt — it goes first
     if (a.resetsAt) return -1;
     if (b.resetsAt) return 1;
     return a.usagePercent - b.usagePercent;
