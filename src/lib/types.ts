@@ -1,6 +1,7 @@
 export interface Service {
   id: string;
   name: string;
+  order: number;        // позиция в списке (меньше = выше)
 }
 
 export interface Account {

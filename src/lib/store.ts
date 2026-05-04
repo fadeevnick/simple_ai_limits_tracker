@@ -18,6 +18,12 @@ export function readStore(): Store {
   const data = JSON.parse(raw);
   // Migration: ensure lifeLimits exists
   if (!data.lifeLimits) data.lifeLimits = [];
+  // Migration: ensure services have order field
+  if (data.services) {
+    data.services.forEach((s: Service, i: number) => {
+      if (s.order === undefined || s.order === null) s.order = i;
+    });
+  }
   return data as Store;
 }
 
@@ -31,7 +37,8 @@ export function writeStore(store: Store): void {
 
 export function addService(name: string): Service {
   const store = readStore();
-  const service: Service = { id: crypto.randomUUID(), name };
+  const maxOrder = store.services.length > 0 ? Math.max(...store.services.map((s) => s.order ?? 0)) : -1;
+  const service: Service = { id: crypto.randomUUID(), name, order: maxOrder + 1 };
   store.services.push(service);
   writeStore(store);
   return service;
@@ -45,6 +52,20 @@ export function deleteService(id: string): boolean {
   if (store.services.length === len) return false;
   writeStore(store);
   return true;
+}
+
+export function reorderService(id: string): Service | null {
+  const store = readStore();
+  const sorted = [...store.services].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const idx = sorted.findIndex((s) => s.id === id);
+  if (idx <= 0) return sorted[idx] ?? null;
+  const service = store.services.find((s) => s.id === id)!;
+  const above = store.services.find((s) => s.id === sorted[idx - 1].id)!;
+  const tmpOrder = service.order;
+  service.order = above.order;
+  above.order = tmpOrder;
+  writeStore(store);
+  return service;
 }
 
 export function addAccount(
