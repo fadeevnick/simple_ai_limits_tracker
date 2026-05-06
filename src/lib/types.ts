@@ -2,6 +2,7 @@ export interface Service {
   id: string;
   name: string;
   order: number;        // позиция в списке (меньше = выше)
+  activeAccountId?: string; // id выделенного аккаунта
 }
 
 export interface Account {

@@ -11,6 +11,8 @@ export const api = {
     list: (): Promise<Service[]> => fetch("/api/services").then(r => r.json()),
     create: (name: string): Promise<Service> => fetch("/api/services", json("POST", { name })).then(r => r.json()),
     reorder: (id: string): Promise<Service | null> => fetch(`/api/services/${id}`, json("PATCH", { direction: "up" })).then(r => r.json()),
+    setActive: (id: string, activeAccountId: string | null): Promise<Service | null> =>
+      fetch(`/api/services/${id}`, json("PATCH", { activeAccountId })).then(r => r.json()),
     delete: (id: string): Promise<{ ok: boolean }> => fetch(`/api/services/${id}`, { method: "DELETE" }).then(r => r.json()),
   },
   accounts: {

@@ -1,4 +1,4 @@
-import { deleteService, reorderService } from "@/lib/store";
+import { deleteService, reorderService, setActiveAccount } from "@/lib/store";
 
 export async function PATCH(
   request: Request,
@@ -8,6 +8,13 @@ export async function PATCH(
   const body = await request.json();
   if (body.direction === "up") {
     const service = reorderService(id);
+    if (!service) {
+      return Response.json({ error: "Service not found" }, { status: 404 });
+    }
+    return Response.json(service);
+  }
+  if (body.activeAccountId !== undefined) {
+    const service = setActiveAccount(id, body.activeAccountId);
     if (!service) {
       return Response.json({ error: "Service not found" }, { status: 404 });
     }

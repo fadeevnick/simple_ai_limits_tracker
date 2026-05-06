@@ -6,7 +6,6 @@ interface ServiceGroupProps {
   service: Service;
   accounts: Account[];
   isFirst: boolean;
-  activeAccountId: string | null;
   onToggleActive: (id: string) => void;
   onAddAccount: (serviceId: string) => void;
   onEditAccount: (account: Account) => void;
@@ -19,7 +18,6 @@ export function ServiceGroup({
   service,
   accounts,
   isFirst,
-  activeAccountId,
   onToggleActive,
   onAddAccount,
   onEditAccount,
@@ -72,7 +70,7 @@ export function ServiceGroup({
             <AccountRow
               key={acc.id}
               account={acc}
-              isActive={acc.id === activeAccountId}
+              isActive={acc.id === service.activeAccountId}
               onToggleActive={onToggleActive}
               onEdit={onEditAccount}
               onDelete={onDeleteAccount}

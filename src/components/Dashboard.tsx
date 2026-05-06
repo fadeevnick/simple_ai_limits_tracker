@@ -22,7 +22,6 @@ export default function Dashboard() {
   const [services, setServices] = useState<Service[]>([]);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeAccountId, setActiveAccountId] = useState<string | null>(null);
 
   const serviceModal = useModal<string>("");
   const accountModal = useModal<AccountModalData>(ACCOUNT_DEFAULTS);
@@ -106,6 +105,17 @@ export default function Dashboard() {
     fetchData();
   };
 
+  const toggleActiveAccount = async (serviceId: string, accountId: string) => {
+    const service = services.find((s) => s.id === serviceId);
+    const newActiveId = service?.activeAccountId === accountId ? null : accountId;
+    await api.services.setActive(serviceId, newActiveId);
+    setServices((prev) =>
+      prev.map((s) =>
+        s.id === serviceId ? { ...s, activeAccountId: newActiveId ?? undefined } : s
+      )
+    );
+  };
+
   /* ─── Render ─── */
 
   if (loading) {
@@ -158,8 +168,7 @@ export default function Dashboard() {
                   service={service}
                   accounts={accounts.filter((a) => a.serviceId === service.id)}
                   isFirst={idx === 0}
-                  activeAccountId={activeAccountId}
-                  onToggleActive={(id) => setActiveAccountId(prev => prev === id ? null : id)}
+                  onToggleActive={(id) => toggleActiveAccount(service.id, id)}
                   onAddAccount={openAddAccount}
                   onEditAccount={openEditAccount}
                   onDeleteAccount={deleteAccount}

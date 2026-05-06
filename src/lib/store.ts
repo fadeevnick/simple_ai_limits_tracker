@@ -24,6 +24,12 @@ export function readStore(): Store {
       if (s.order === undefined || s.order === null) s.order = i;
     });
   }
+  // Migration: ensure activeAccountId field exists on services
+  if (data.services) {
+    data.services.forEach((s: Service) => {
+      if (s.activeAccountId === undefined) s.activeAccountId = undefined;
+    });
+  }
   return data as Store;
 }
 
@@ -105,10 +111,27 @@ export function updateAccount(
 export function deleteAccount(id: string): boolean {
   const store = readStore();
   const len = store.accounts.length;
+  const account = store.accounts.find((a) => a.id === id);
   store.accounts = store.accounts.filter((a) => a.id !== id);
   if (store.accounts.length === len) return false;
+  // Clear activeAccountId on the service if this account was active
+  if (account) {
+    const service = store.services.find((s) => s.id === account.serviceId);
+    if (service && service.activeAccountId === id) {
+      service.activeAccountId = undefined;
+    }
+  }
   writeStore(store);
   return true;
+}
+
+export function setActiveAccount(serviceId: string, accountId: string | null): Service | null {
+  const store = readStore();
+  const service = store.services.find((s) => s.id === serviceId);
+  if (!service) return null;
+  service.activeAccountId = accountId ?? undefined;
+  writeStore(store);
+  return service;
 }
 
 export function addLifeLimit(name: string, deadline: string): LifeLimit {
