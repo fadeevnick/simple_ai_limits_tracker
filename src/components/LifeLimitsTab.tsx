@@ -4,7 +4,10 @@ import { api } from "@/lib/api";
 import { toDatetimeLocal } from "@/lib/time";
 import { useModal } from "@/lib/useModal";
 import { LifeLimitRow } from "@/components/LifeLimitRow";
-import { LifeLimitModal, LifeLimitModalData } from "@/components/LifeLimitModal";
+import {
+  LifeLimitModal,
+  LifeLimitModalData,
+} from "@/components/LifeLimitModal";
 import { Button } from "@/components/ui/Button";
 
 const MODAL_DEFAULTS: LifeLimitModalData = { name: "", deadline: "" };
@@ -35,7 +38,10 @@ export function LifeLimitsTab() {
   const submitLimit = async (data: LifeLimitModalData) => {
     const iso = new Date(data.deadline).toISOString();
     if (modal.isOpen && modal.modal.open && modal.modal.id) {
-      await api.lifeLimits.update(modal.modal.id, { name: data.name, deadline: iso });
+      await api.lifeLimits.update(modal.modal.id, {
+        name: data.name,
+        deadline: iso,
+      });
     } else {
       await api.lifeLimits.create(data.name, iso);
     }
@@ -49,23 +55,35 @@ export function LifeLimitsTab() {
     fetchLimits();
   };
 
-  if (loading) return <div className="text-gray-500 text-center py-24">Loading...</div>;
+  if (loading)
+    return (
+      <div className="text-lg text-gray-500 text-center py-24">Loading...</div>
+    );
 
-  const sorted = [...limits].sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
+  const sorted = [...limits].sort(
+    (a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime(),
+  );
 
   return (
     <div>
-      <div className="flex justify-end mb-6">
-        <Button variant="primary" onClick={openAdd}>+ Event</Button>
+      <div className="flex justify-end mb-4">
+        <Button variant="primary" onClick={openAdd}>
+          + Event
+        </Button>
       </div>
       {sorted.length === 0 ? (
-        <div className="text-center py-24 text-gray-400">
+        <div className="text-lg text-center py-24 text-gray-400">
           <p>No events yet. Add one to get started.</p>
         </div>
       ) : (
-        <div className="border border-[var(--border)] rounded-lg p-6">
+        <div className="border border-[var(--border)] rounded-xl p-7">
           {sorted.map((l) => (
-            <LifeLimitRow key={l.id} limit={l} onEdit={openEdit} onDelete={deleteLimit} />
+            <LifeLimitRow
+              key={l.id}
+              limit={l}
+              onEdit={openEdit}
+              onDelete={deleteLimit}
+            />
           ))}
         </div>
       )}

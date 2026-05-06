@@ -1,4 +1,9 @@
 import { readStore, addService } from "@/lib/store";
+import type { LimitMode } from "@/lib/types";
+
+function isLimitMode(value: unknown): value is LimitMode {
+  return value === "single" || value === "dailyWeekly";
+}
 
 export async function GET() {
   const store = readStore();
@@ -6,10 +11,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { name } = await request.json();
+  const { name, limitMode = "single" } = await request.json();
   if (!name || typeof name !== "string") {
     return Response.json({ error: "name is required" }, { status: 400 });
   }
-  const service = addService(name.trim());
+  if (!isLimitMode(limitMode)) {
+    return Response.json(
+      { error: "limitMode must be single or dailyWeekly" },
+      { status: 400 },
+    );
+  }
+  const service = addService(name.trim(), limitMode);
   return Response.json(service, { status: 201 });
 }

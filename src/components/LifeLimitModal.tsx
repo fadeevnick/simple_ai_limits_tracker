@@ -18,7 +18,15 @@ interface LifeLimitModalProps {
   onDelete?: () => void;
 }
 
-export function LifeLimitModal({ open, title, initial, onSubmit, onClose, showDelete, onDelete }: LifeLimitModalProps) {
+export function LifeLimitModal({
+  open,
+  title,
+  initial,
+  onSubmit,
+  onClose,
+  showDelete,
+  onDelete,
+}: LifeLimitModalProps) {
   const [name, setName] = useState(initial.name);
   const [deadline, setDeadline] = useState(initial.deadline);
   const nameRef = useRef<HTMLInputElement>(null);
@@ -39,26 +47,52 @@ export function LifeLimitModal({ open, title, initial, onSubmit, onClose, showDe
   return (
     <ModalShell open={open} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="p-8">
-          <h3 className="text-2xl font-bold mb-8">{title}</h3>
+        <div className="p-9">
+          <h3 className="text-3xl font-bold mb-8">{title}</h3>
           <div className="space-y-6">
             <div>
-              <label className="block text-sm text-gray-500 mb-2">Event name</label>
-              <Input ref={nameRef} type="text" value={name} onChange={(e) => setName(e.target.value)} />
+              <label className="block text-base text-gray-500 mb-2">
+                Event name
+              </label>
+              <Input
+                ref={nameRef}
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
             <div>
-              <label className="block text-sm text-gray-500 mb-2">Deadline</label>
-              <Input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+              <label className="block text-base text-gray-500 mb-2">
+                Deadline
+              </label>
+              <Input
+                type="datetime-local"
+                value={deadline}
+                onChange={(e) => setDeadline(e.target.value)}
+              />
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 border-t border-[var(--border)] px-8 py-4">
+        <div className="flex items-center gap-3 border-t border-[var(--border)] px-9 py-5">
           {showDelete && onDelete && (
-            <Button variant="danger" type="button" onClick={() => { onDelete(); onClose(); }}>Delete</Button>
+            <Button
+              variant="danger"
+              type="button"
+              onClick={() => {
+                onDelete();
+                onClose();
+              }}
+            >
+              Delete
+            </Button>
           )}
           <div className="flex-1" />
-          <Button type="button" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" type="submit">Save</Button>
+          <Button type="button" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="primary" type="submit">
+            Save
+          </Button>
         </div>
       </form>
     </ModalShell>
