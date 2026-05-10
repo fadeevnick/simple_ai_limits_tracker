@@ -4,6 +4,10 @@ import { ACCOUNT_STATUSES } from "@/lib/types";
 import { ModalShell } from "@/components/ui/ModalShell";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import {
+  LifetimeData,
+  LifetimeFields,
+} from "@/components/ui/LifetimeFields";
 
 export type ResetMode = "duration" | "date";
 
@@ -21,6 +25,7 @@ export interface AccountModalData {
   password: string;
   status: AccountStatus;
   tags: string[];
+  lifetime: LifetimeData;
   general: LimitModalData;
   daily: LimitModalData;
   weekly: LimitModalData;
@@ -166,6 +171,7 @@ export function AccountModal({
   const [password, setPassword] = useState(initial.password);
   const [status, setStatus] = useState<AccountStatus>(initial.status);
   const [tagsInput, setTagsInput] = useState(initial.tags.join(", "));
+  const [lifetime, setLifetime] = useState<LifetimeData>(initial.lifetime);
   const [general, setGeneral] = useState(initial.general ?? emptyLimit());
   const [daily, setDaily] = useState(initial.daily ?? emptyLimit());
   const [weekly, setWeekly] = useState(initial.weekly ?? emptyLimit());
@@ -177,6 +183,7 @@ export function AccountModal({
       setPassword(initial.password);
       setStatus(initial.status);
       setTagsInput(initial.tags.join(", "));
+      setLifetime(initial.lifetime);
       setGeneral(initial.general ?? emptyLimit());
       setDaily(initial.daily ?? emptyLimit());
       setWeekly(initial.weekly ?? emptyLimit());
@@ -191,6 +198,7 @@ export function AccountModal({
       password,
       status,
       tags: parseTagsInput(tagsInput),
+      lifetime,
       general,
       daily,
       weekly,
@@ -260,6 +268,8 @@ export function AccountModal({
                 placeholder="comma, separated, tags"
               />
             </div>
+
+            <LifetimeFields value={lifetime} onChange={setLifetime} />
 
             {limitMode === "dailyWeekly" ? (
               <>

@@ -1,4 +1,9 @@
-import { deleteService, reorderService, setActiveAccount } from "@/lib/store";
+import {
+  deleteService,
+  reorderService,
+  setActiveAccount,
+  updateService,
+} from "@/lib/store";
 
 export async function PATCH(
   request: Request,
@@ -15,6 +20,40 @@ export async function PATCH(
   }
   if (body.activeAccountId !== undefined) {
     const service = setActiveAccount(id, body.activeAccountId);
+    if (!service) {
+      return Response.json({ error: "Service not found" }, { status: 404 });
+    }
+    return Response.json(service);
+  }
+  if (
+    body.name !== undefined ||
+    body.lifetimeEndsAt !== undefined ||
+    body.description !== undefined
+  ) {
+    const updates: {
+      name?: string;
+      lifetimeEndsAt?: string;
+      description?: string;
+    } = {};
+    if (body.name !== undefined) {
+      if (typeof body.name !== "string" || !body.name.trim()) {
+        return Response.json(
+          { error: "name must be a non-empty string" },
+          { status: 400 },
+        );
+      }
+      updates.name = body.name.trim();
+    }
+    if (body.lifetimeEndsAt !== undefined) {
+      // null/"" clears it
+      updates.lifetimeEndsAt =
+        body.lifetimeEndsAt === null ? "" : String(body.lifetimeEndsAt);
+    }
+    if (body.description !== undefined) {
+      updates.description =
+        body.description === null ? "" : String(body.description);
+    }
+    const service = updateService(id, updates);
     if (!service) {
       return Response.json({ error: "Service not found" }, { status: 404 });
     }

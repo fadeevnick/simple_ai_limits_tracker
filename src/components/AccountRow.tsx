@@ -18,6 +18,14 @@ function getBarColor(percent: number) {
   return "bg-[var(--fill)]/50";
 }
 
+function renderLifetime(lifetimeEndsAt: string | undefined) {
+  if (!lifetimeEndsAt) return "not set";
+  if (new Date(lifetimeEndsAt).getTime() < Date.now()) {
+    return <span className="text-red-500">expired</span>;
+  }
+  return formatTimeLeft(lifetimeEndsAt);
+}
+
 function timeLabel(limit: LimitState) {
   if (!limit.resetsAt) return "—";
   if (new Date(limit.resetsAt).getTime() < Date.now()) return "—";
@@ -100,6 +108,9 @@ export function AccountRow({
             ))}
           </div>
         )}
+        <div className="text-xs text-gray-500 mt-1 truncate">
+          Lifetime — {renderLifetime(account.lifetimeEndsAt)}
+        </div>
       </div>
 
       {limitMode === "dailyWeekly" ? (

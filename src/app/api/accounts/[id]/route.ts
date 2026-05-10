@@ -48,6 +48,10 @@ export async function PATCH(
     }
     updates.tags = body.tags;
   }
+  if (body.lifetimeEndsAt !== undefined) {
+    updates.lifetimeEndsAt =
+      body.lifetimeEndsAt === null ? "" : String(body.lifetimeEndsAt);
+  }
   if (body.usagePercent !== undefined) {
     const percent = Number(body.usagePercent);
     if (isNaN(percent) || percent < 0 || percent > 100) {

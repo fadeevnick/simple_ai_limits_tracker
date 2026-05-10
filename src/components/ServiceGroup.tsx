@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { Service, Account } from "@/lib/types";
 import { getLimit, limitSortTime } from "@/lib/limits";
+import { formatTimeLeft } from "@/lib/time";
 import { AccountRow } from "@/components/AccountRow";
 
 interface ServiceGroupProps {
@@ -76,11 +78,35 @@ export function ServiceGroup({
     <div className="border border-[var(--border)] rounded-xl p-7">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold">{service.name}</h2>
+          <h2 className="text-2xl font-bold">
+            <Link
+              href={`/services/${service.id}`}
+              className="hover:underline"
+            >
+              {service.name}
+            </Link>
+          </h2>
           <p className="text-sm text-gray-400 mt-1">
             {service.limitMode === "dailyWeekly"
               ? "daily + weekly"
               : "single limit"}
+            {service.lifetimeEndsAt && (
+              <>
+                {" · "}
+                <span
+                  className={
+                    new Date(service.lifetimeEndsAt).getTime() < Date.now()
+                      ? "text-red-500"
+                      : ""
+                  }
+                >
+                  lifetime:{" "}
+                  {new Date(service.lifetimeEndsAt).getTime() < Date.now()
+                    ? "expired"
+                    : formatTimeLeft(service.lifetimeEndsAt)}
+                </span>
+              </>
+            )}
           </p>
         </div>
         <div className="flex gap-2">

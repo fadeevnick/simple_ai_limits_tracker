@@ -17,10 +17,25 @@ export const api = {
   services: {
     list: (): Promise<Service[]> =>
       fetch("/api/services").then((r) => r.json()),
-    create: (name: string, limitMode: LimitMode): Promise<Service> =>
-      fetch("/api/services", json("POST", { name, limitMode })).then((r) =>
-        r.json(),
-      ),
+    create: (
+      name: string,
+      limitMode: LimitMode,
+      lifetimeEndsAt?: string,
+      description?: string,
+    ): Promise<Service> =>
+      fetch(
+        "/api/services",
+        json("POST", { name, limitMode, lifetimeEndsAt, description }),
+      ).then((r) => r.json()),
+    update: (
+      id: string,
+      data: {
+        name?: string;
+        lifetimeEndsAt?: string | null;
+        description?: string;
+      },
+    ): Promise<Service | null> =>
+      fetch(`/api/services/${id}`, json("PATCH", data)).then((r) => r.json()),
     reorder: (id: string): Promise<Service | null> =>
       fetch(`/api/services/${id}`, json("PATCH", { direction: "up" })).then(
         (r) => r.json(),
@@ -44,6 +59,7 @@ export const api = {
       password?: string;
       status?: AccountStatus;
       tags?: string[];
+      lifetimeEndsAt?: string;
       usagePercent?: number;
       resetsAt?: string;
       limits?: AccountLimits;
@@ -56,6 +72,7 @@ export const api = {
         password?: string;
         status?: AccountStatus;
         tags?: string[];
+        lifetimeEndsAt?: string | null;
         usagePercent?: number;
         resetsAt?: string;
         limits?: AccountLimits;

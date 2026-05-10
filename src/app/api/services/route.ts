@@ -11,7 +11,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { name, limitMode = "single" } = await request.json();
+  const {
+    name,
+    limitMode = "single",
+    lifetimeEndsAt,
+    description,
+  } = await request.json();
   if (!name || typeof name !== "string") {
     return Response.json({ error: "name is required" }, { status: 400 });
   }
@@ -21,6 +26,15 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  const service = addService(name.trim(), limitMode);
+  const lifetime =
+    typeof lifetimeEndsAt === "string" && lifetimeEndsAt
+      ? lifetimeEndsAt
+      : undefined;
+  const service = addService(
+    name.trim(),
+    limitMode,
+    lifetime,
+    typeof description === "string" ? description : undefined,
+  );
   return Response.json(service, { status: 201 });
 }

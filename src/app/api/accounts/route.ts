@@ -36,6 +36,7 @@ export async function POST(request: Request) {
     password,
     status,
     tags,
+    lifetimeEndsAt,
     usagePercent = 0,
     resetsAt,
     limits,
@@ -68,6 +69,10 @@ export async function POST(request: Request) {
     password: typeof password === "string" ? password : undefined,
     status: isAccountStatus(status) ? status : undefined,
     tags: Array.isArray(tags) ? tags : undefined,
+    lifetimeEndsAt:
+      typeof lifetimeEndsAt === "string" && lifetimeEndsAt
+        ? lifetimeEndsAt
+        : undefined,
     usagePercent: percent,
     resetsAt,
     limits,

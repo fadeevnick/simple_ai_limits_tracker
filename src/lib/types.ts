@@ -18,6 +18,8 @@ export interface Service {
   order: number; // позиция в списке (меньше = выше)
   activeAccountId?: string; // id выделенного аккаунта
   limitMode: LimitMode; // single = общий лимит, dailyWeekly = дневной + недельный
+  lifetimeEndsAt?: string; // ISO timestamp — до какого момента сервис «работает»
+  description: string;
 }
 
 export type AccountStatus = "ACTIVE" | "BLOCKED" | "NOT_ELEGIBLE_FOR_FREE";
@@ -35,6 +37,7 @@ export interface Account {
   password?: string;
   status: AccountStatus;
   tags: string[];
+  lifetimeEndsAt?: string; // ISO timestamp — до какого момента аккаунт «живёт»
   limits: AccountLimits;
   /** @deprecated migrated to email */
   name?: string;

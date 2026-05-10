@@ -11,14 +11,20 @@ import {
 import { api } from "@/lib/api";
 import { getRemainingDHM, calcResetsAt, toDatetimeLocal } from "@/lib/time";
 import { getDisplayLimit } from "@/lib/limits";
+import { lifetimeDataToIso } from "@/components/ui/LifetimeFields";
 import { useModal } from "@/lib/useModal";
 import { ServiceGroup } from "@/components/ServiceGroup";
-import { ServiceModal, ServiceModalData } from "@/components/ServiceModal";
+import {
+  ServiceModal,
+  ServiceModalData,
+  ServiceModalSubmit,
+} from "@/components/ServiceModal";
 import {
   AccountModal,
   AccountModalData,
   LimitModalData,
 } from "@/components/AccountModal";
+import { buildLifetimeData } from "@/components/ui/LifetimeFields";
 import { LifeLimitsTab } from "@/components/LifeLimitsTab";
 import { Button } from "@/components/ui/Button";
 
@@ -38,6 +44,7 @@ const ACCOUNT_DEFAULTS: AccountModalData = {
   password: "",
   status: "ACTIVE",
   tags: [],
+  lifetime: { mode: "none", days: 0, date: "" },
   general: EMPTY_LIMIT,
   daily: EMPTY_LIMIT,
   weekly: EMPTY_LIMIT,
@@ -46,6 +53,8 @@ const ACCOUNT_DEFAULTS: AccountModalData = {
 const SERVICE_DEFAULTS: ServiceModalData = {
   name: "",
   limitMode: "single",
+  lifetime: { mode: "none", days: 0, date: "" },
+  description: "",
 };
 
 function limitToModalData(limit?: LimitState): LimitModalData {
@@ -103,8 +112,13 @@ export default function Dashboard() {
 
   /* ─── Service actions ─── */
 
-  const addService = async (data: ServiceModalData) => {
-    await api.services.create(data.name, data.limitMode);
+  const addService = async (data: ServiceModalSubmit) => {
+    await api.services.create(
+      data.name,
+      data.limitMode,
+      data.lifetimeEndsAt ?? undefined,
+      data.description,
+    );
     fetchData();
   };
 
@@ -137,6 +151,7 @@ export default function Dashboard() {
         password: account.password ?? "",
         status: account.status,
         tags: account.tags ?? [],
+        lifetime: buildLifetimeData(account.lifetimeEndsAt),
         general: limitToModalData(getDisplayLimit(account, "general")),
         daily: limitToModalData(getDisplayLimit(account, "daily")),
         weekly: limitToModalData(getDisplayLimit(account, "weekly")),
@@ -156,12 +171,14 @@ export default function Dashboard() {
             general: modalDataToLimit(data.general),
           };
 
+    const lifetimeIso = lifetimeDataToIso(data.lifetime);
     if (accountModal.modal.open && accountModal.modal.id) {
       await api.accounts.update(accountModal.modal.id, {
         email: data.email,
         password: data.password,
         status: data.status,
         tags: data.tags,
+        lifetimeEndsAt: lifetimeIso,
         limits,
       });
     } else {
@@ -171,6 +188,7 @@ export default function Dashboard() {
         password: data.password || undefined,
         status: data.status,
         tags: data.tags,
+        lifetimeEndsAt: lifetimeIso ?? undefined,
         limits,
       });
     }

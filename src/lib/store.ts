@@ -66,6 +66,7 @@ function migrateStore(data: Partial<Store>): Store {
     } else if (!isLimitMode(service.limitMode)) {
       service.limitMode = "single";
     }
+    if (typeof service.description !== "string") service.description = "";
   });
 
   const servicesById = new Map(
@@ -136,6 +137,8 @@ export function writeStore(store: Store): void {
 export function addService(
   name: string,
   limitMode: LimitMode = "single",
+  lifetimeEndsAt?: string,
+  description?: string,
 ): Service {
   const store = readStore();
   const maxOrder =
@@ -147,8 +150,30 @@ export function addService(
     name,
     order: maxOrder + 1,
     limitMode: isLimitMode(limitMode) ? limitMode : "single",
+    description: typeof description === "string" ? description : "",
+    ...(lifetimeEndsAt ? { lifetimeEndsAt } : {}),
   };
   store.services.push(service);
+  writeStore(store);
+  return service;
+}
+
+export function updateService(
+  id: string,
+  updates: Partial<Pick<Service, "name" | "lifetimeEndsAt" | "description">>,
+): Service | null {
+  const store = readStore();
+  const service = store.services.find((s) => s.id === id);
+  if (!service) return null;
+  if (updates.name !== undefined) service.name = updates.name;
+  if (updates.description !== undefined) service.description = updates.description;
+  if (updates.lifetimeEndsAt !== undefined) {
+    if (updates.lifetimeEndsAt === "" || updates.lifetimeEndsAt === null) {
+      delete service.lifetimeEndsAt;
+    } else {
+      service.lifetimeEndsAt = updates.lifetimeEndsAt;
+    }
+  }
   writeStore(store);
   return service;
 }
@@ -185,6 +210,7 @@ export interface AddAccountInput {
   password?: string;
   status?: AccountStatus;
   tags?: string[];
+  lifetimeEndsAt?: string;
   usagePercent?: number;
   resetsAt?: string;
   limits?: AccountLimits;
@@ -213,6 +239,7 @@ export function addAccount(input: AddAccountInput): Account | null {
     password,
     status,
     tags,
+    lifetimeEndsAt,
     usagePercent = 0,
     resetsAt,
     limits,
@@ -240,6 +267,7 @@ export function addAccount(input: AddAccountInput): Account | null {
     tags: normalizeTags(tags),
     limits: normalizeLimits(accountLimits),
     ...(password ? { password } : {}),
+    ...(lifetimeEndsAt ? { lifetimeEndsAt } : {}),
   };
   store.accounts.push(account);
   writeStore(store);
@@ -255,6 +283,7 @@ export function updateAccount(
       | "password"
       | "status"
       | "tags"
+      | "lifetimeEndsAt"
       | "usagePercent"
       | "resetsAt"
       | "limits"
@@ -273,6 +302,13 @@ export function updateAccount(
     account.status = updates.status;
   }
   if (updates.tags !== undefined) account.tags = normalizeTags(updates.tags);
+  if (updates.lifetimeEndsAt !== undefined) {
+    if (updates.lifetimeEndsAt === "" || updates.lifetimeEndsAt === null) {
+      delete account.lifetimeEndsAt;
+    } else {
+      account.lifetimeEndsAt = updates.lifetimeEndsAt;
+    }
+  }
   if (updates.usagePercent !== undefined)
     account.usagePercent = updates.usagePercent;
   if (updates.resetsAt !== undefined) account.resetsAt = updates.resetsAt;
