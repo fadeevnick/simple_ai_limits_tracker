@@ -34,7 +34,10 @@ const EMPTY_LIMIT: LimitModalData = {
 };
 
 const ACCOUNT_DEFAULTS: AccountModalData = {
-  name: "",
+  email: "",
+  password: "",
+  status: "ACTIVE",
+  tags: [],
   general: EMPTY_LIMIT,
   daily: EMPTY_LIMIT,
   weekly: EMPTY_LIMIT,
@@ -130,7 +133,10 @@ export default function Dashboard() {
     setAccountLimitMode(limitMode);
     accountModal.open(
       {
-        name: account.name,
+        email: account.email,
+        password: account.password ?? "",
+        status: account.status,
+        tags: account.tags ?? [],
         general: limitToModalData(getDisplayLimit(account, "general")),
         daily: limitToModalData(getDisplayLimit(account, "daily")),
         weekly: limitToModalData(getDisplayLimit(account, "weekly")),
@@ -152,13 +158,19 @@ export default function Dashboard() {
 
     if (accountModal.modal.open && accountModal.modal.id) {
       await api.accounts.update(accountModal.modal.id, {
-        name: data.name,
+        email: data.email,
+        password: data.password,
+        status: data.status,
+        tags: data.tags,
         limits,
       });
     } else {
       await api.accounts.create({
         serviceId: pendingServiceId.current!,
-        name: data.name,
+        email: data.email,
+        password: data.password || undefined,
+        status: data.status,
+        tags: data.tags,
         limits,
       });
     }
@@ -195,7 +207,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-8 pt-7 pb-10">
+    <div className="max-w-6xl mx-auto px-8 pt-7 pb-10">
       <h1 className="text-4xl font-bold mb-6">Limits</h1>
 
       {/* Tabs + primary action */}

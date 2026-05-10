@@ -1,6 +1,7 @@
 import { Account, LimitKind, LimitMode, LimitState } from "@/lib/types";
 import { formatTimeLeft } from "@/lib/time";
 import { getDisplayLimit } from "@/lib/limits";
+import { statusColorClass } from "@/lib/accountStatus";
 
 interface AccountRowProps {
   account: Account;
@@ -18,9 +19,8 @@ function getBarColor(percent: number) {
 }
 
 function timeLabel(limit: LimitState) {
-  if (limit.usagePercent === 0) return "available";
   if (!limit.resetsAt) return "—";
-  if (new Date(limit.resetsAt).getTime() < Date.now()) return "available";
+  if (new Date(limit.resetsAt).getTime() < Date.now()) return "—";
   return formatTimeLeft(limit.resetsAt);
 }
 
@@ -77,11 +77,30 @@ export function AccountRow({
 
   return (
     <div className={rowClass} onClick={() => onToggleActive(account.id)}>
-      <span
-        className={`text-lg w-52 truncate ${isFull ? "line-through text-gray-400" : ""}`}
-      >
-        {account.name}
-      </span>
+      <div className="w-[28rem] min-w-0">
+        <div
+          className={`text-lg truncate ${isFull ? "line-through text-gray-400" : ""}`}
+        >
+          {account.email}
+        </div>
+        <div
+          className={`text-xs font-mono mt-0.5 truncate ${statusColorClass(account.status)}`}
+        >
+          {account.status}
+        </div>
+        {account.tags && account.tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {account.tags.map((tag) => (
+              <span
+                key={tag}
+                className="text-xs px-2 py-0.5 rounded-full bg-[var(--tab-inactive)] text-gray-600 border border-[var(--border)]"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
 
       {limitMode === "dailyWeekly" ? (
         <div className="flex-1 space-y-2.5 min-w-0">

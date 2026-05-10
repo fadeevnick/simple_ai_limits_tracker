@@ -1,6 +1,7 @@
 import type {
   Account,
   AccountLimits,
+  AccountStatus,
   LifeLimit,
   LimitMode,
   Service,
@@ -39,7 +40,10 @@ export const api = {
       fetch("/api/accounts").then((r) => r.json()),
     create: (data: {
       serviceId: string;
-      name: string;
+      email: string;
+      password?: string;
+      status?: AccountStatus;
+      tags?: string[];
       usagePercent?: number;
       resetsAt?: string;
       limits?: AccountLimits;
@@ -48,7 +52,10 @@ export const api = {
     update: (
       id: string,
       data: {
-        name?: string;
+        email?: string;
+        password?: string;
+        status?: AccountStatus;
+        tags?: string[];
         usagePercent?: number;
         resetsAt?: string;
         limits?: AccountLimits;

@@ -1,6 +1,7 @@
 import {
   Account,
   AccountLimits,
+  AccountStatus,
   LimitMode,
   LimitState,
   Service,
@@ -27,6 +28,14 @@ function getDefaultStore(): Store {
 
 function isLimitMode(value: unknown): value is LimitMode {
   return value === "single" || value === "dailyWeekly";
+}
+
+function isAccountStatus(value: unknown): value is AccountStatus {
+  return (
+    value === "ACTIVE" ||
+    value === "BLOCKED" ||
+    value === "NOT_ELEGIBLE_FOR_FREE"
+  );
 }
 
 function hasLimit(limit: LimitState | undefined): limit is LimitState {
@@ -64,6 +73,16 @@ function migrateStore(data: Partial<Store>): Store {
   );
 
   store.accounts.forEach((account) => {
+    if (!account.email && account.name) {
+      account.email = account.name;
+    }
+    if (account.email === undefined) account.email = "";
+    if (account.name !== undefined) delete account.name;
+    if (!isAccountStatus(account.status)) account.status = "ACTIVE";
+    account.tags = Array.isArray(account.tags)
+      ? account.tags.filter((t): t is string => typeof t === "string")
+      : [];
+
     const service = servicesById.get(account.serviceId);
     const mode = service?.limitMode ?? "single";
     const existingLimits = account.limits ?? {};
@@ -160,13 +179,44 @@ export function reorderService(id: string): Service | null {
   return service;
 }
 
-export function addAccount(
-  serviceId: string,
-  name: string,
-  usagePercent: number,
-  resetsAt?: string,
-  limits?: AccountLimits,
-): Account | null {
+export interface AddAccountInput {
+  serviceId: string;
+  email: string;
+  password?: string;
+  status?: AccountStatus;
+  tags?: string[];
+  usagePercent?: number;
+  resetsAt?: string;
+  limits?: AccountLimits;
+}
+
+function normalizeTags(input: unknown): string[] {
+  if (!Array.isArray(input)) return [];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const raw of input) {
+    if (typeof raw !== "string") continue;
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(trimmed);
+  }
+  return result;
+}
+
+export function addAccount(input: AddAccountInput): Account | null {
+  const {
+    serviceId,
+    email,
+    password,
+    status,
+    tags,
+    usagePercent = 0,
+    resetsAt,
+    limits,
+  } = input;
   const store = readStore();
   const service = store.services.find((s) => s.id === serviceId);
   if (!service) return null;
@@ -185,8 +235,11 @@ export function addAccount(
   const account: Account = {
     id: crypto.randomUUID(),
     serviceId,
-    name,
+    email,
+    status: isAccountStatus(status) ? status : "ACTIVE",
+    tags: normalizeTags(tags),
     limits: normalizeLimits(accountLimits),
+    ...(password ? { password } : {}),
   };
   store.accounts.push(account);
   writeStore(store);
@@ -196,13 +249,30 @@ export function addAccount(
 export function updateAccount(
   id: string,
   updates: Partial<
-    Pick<Account, "name" | "usagePercent" | "resetsAt" | "limits">
+    Pick<
+      Account,
+      | "email"
+      | "password"
+      | "status"
+      | "tags"
+      | "usagePercent"
+      | "resetsAt"
+      | "limits"
+    >
   >,
 ): Account | null {
   const store = readStore();
   const account = store.accounts.find((a) => a.id === id);
   if (!account) return null;
-  if (updates.name !== undefined) account.name = updates.name;
+  if (updates.email !== undefined) account.email = updates.email;
+  if (updates.password !== undefined) {
+    if (updates.password === "") delete account.password;
+    else account.password = updates.password;
+  }
+  if (updates.status !== undefined && isAccountStatus(updates.status)) {
+    account.status = updates.status;
+  }
+  if (updates.tags !== undefined) account.tags = normalizeTags(updates.tags);
   if (updates.usagePercent !== undefined)
     account.usagePercent = updates.usagePercent;
   if (updates.resetsAt !== undefined) account.resetsAt = updates.resetsAt;

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import type { LimitMode } from "@/lib/types";
+import type { AccountStatus, LimitMode } from "@/lib/types";
+import { ACCOUNT_STATUSES } from "@/lib/types";
 import { ModalShell } from "@/components/ui/ModalShell";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
@@ -16,10 +17,20 @@ export interface LimitModalData {
 }
 
 export interface AccountModalData {
-  name: string;
+  email: string;
+  password: string;
+  status: AccountStatus;
+  tags: string[];
   general: LimitModalData;
   daily: LimitModalData;
   weekly: LimitModalData;
+}
+
+function parseTagsInput(value: string): string[] {
+  return value
+    .split(",")
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
 }
 
 interface AccountModalProps {
@@ -151,25 +162,39 @@ export function AccountModal({
   showDelete,
   onDelete,
 }: AccountModalProps) {
-  const [name, setName] = useState(initial.name);
+  const [email, setEmail] = useState(initial.email);
+  const [password, setPassword] = useState(initial.password);
+  const [status, setStatus] = useState<AccountStatus>(initial.status);
+  const [tagsInput, setTagsInput] = useState(initial.tags.join(", "));
   const [general, setGeneral] = useState(initial.general ?? emptyLimit());
   const [daily, setDaily] = useState(initial.daily ?? emptyLimit());
   const [weekly, setWeekly] = useState(initial.weekly ?? emptyLimit());
-  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (open) {
-      setName(initial.name);
+      setEmail(initial.email);
+      setPassword(initial.password);
+      setStatus(initial.status);
+      setTagsInput(initial.tags.join(", "));
       setGeneral(initial.general ?? emptyLimit());
       setDaily(initial.daily ?? emptyLimit());
       setWeekly(initial.weekly ?? emptyLimit());
-      setTimeout(() => nameRef.current?.focus(), 50);
+      setTimeout(() => emailRef.current?.focus(), 50);
     }
   }, [open, initial]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ name: name.trim(), general, daily, weekly });
+    onSubmit({
+      email: email.trim(),
+      password,
+      status,
+      tags: parseTagsInput(tagsInput),
+      general,
+      daily,
+      weekly,
+    });
   };
 
   return (
@@ -181,13 +206,58 @@ export function AccountModal({
           <div className="space-y-6">
             <div>
               <label className="block text-base text-gray-500 mb-2">
-                Account name
+                Account email
               </label>
               <Input
-                ref={nameRef}
+                ref={emailRef}
                 type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-base text-gray-500 mb-2">
+                Password
+              </label>
+              <Input
+                type="text"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="block text-base text-gray-500 mb-2">
+                Status
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {ACCOUNT_STATUSES.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setStatus(s)}
+                    className={`px-4 py-2 text-base rounded-lg border ${
+                      status === s
+                        ? "border-gray-400 bg-[var(--hover)] text-[var(--text-bright)]"
+                        : "border-[var(--border)] text-gray-500"
+                    }`}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-base text-gray-500 mb-2">
+                Tags
+              </label>
+              <Input
+                type="text"
+                value={tagsInput}
+                onChange={(e) => setTagsInput(e.target.value)}
+                placeholder="comma, separated, tags"
               />
             </div>
 

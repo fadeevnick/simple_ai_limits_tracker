@@ -1,5 +1,13 @@
 import { readStore, addAccount } from "@/lib/store";
-import type { AccountLimits, LimitState } from "@/lib/types";
+import type { AccountLimits, AccountStatus, LimitState } from "@/lib/types";
+
+function isAccountStatus(value: unknown): value is AccountStatus {
+  return (
+    value === "ACTIVE" ||
+    value === "BLOCKED" ||
+    value === "NOT_ELEGIBLE_FOR_FREE"
+  );
+}
 
 function isValidLimit(limit: LimitState | undefined): boolean {
   if (!limit) return true;
@@ -24,14 +32,17 @@ export async function GET() {
 export async function POST(request: Request) {
   const {
     serviceId,
-    name,
+    email,
+    password,
+    status,
+    tags,
     usagePercent = 0,
     resetsAt,
     limits,
   } = await request.json();
-  if (!serviceId || !name) {
+  if (!serviceId || !email) {
     return Response.json(
-      { error: "serviceId and name are required" },
+      { error: "serviceId and email are required" },
       { status: 400 },
     );
   }
@@ -48,7 +59,19 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
-  const account = addAccount(serviceId, name.trim(), percent, resetsAt, limits);
+  if (status !== undefined && !isAccountStatus(status)) {
+    return Response.json({ error: "invalid status" }, { status: 400 });
+  }
+  const account = addAccount({
+    serviceId,
+    email: String(email).trim(),
+    password: typeof password === "string" ? password : undefined,
+    status: isAccountStatus(status) ? status : undefined,
+    tags: Array.isArray(tags) ? tags : undefined,
+    usagePercent: percent,
+    resetsAt,
+    limits,
+  });
   if (!account) {
     return Response.json({ error: "Service not found" }, { status: 404 });
   }

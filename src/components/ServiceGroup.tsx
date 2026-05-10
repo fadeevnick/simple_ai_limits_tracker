@@ -14,6 +14,32 @@ interface ServiceGroupProps {
   onDeleteService: (id: string) => void;
 }
 
+function emailLocalPart(email: string): string {
+  const at = email.indexOf("@");
+  return (at === -1 ? email : email.slice(0, at)).trim().toLowerCase();
+}
+
+function groupAccountsByLocalPart(
+  service: Service,
+  accounts: Account[],
+): Account[][] {
+  const groups = new Map<string, Account[]>();
+  for (const acc of accounts) {
+    const key = emailLocalPart(acc.email);
+    const list = groups.get(key);
+    if (list) list.push(acc);
+    else groups.set(key, [acc]);
+  }
+  const result: Account[][] = [];
+  for (const list of groups.values()) {
+    list.sort((a, b) => compareAccounts(service, a, b));
+    result.push(list);
+  }
+  // Sort groups by their leading account (so most-urgent group comes first)
+  result.sort((a, b) => compareAccounts(service, a[0], b[0]));
+  return result;
+}
+
 function compareAccounts(service: Service, a: Account, b: Account): number {
   if (service.limitMode === "dailyWeekly") {
     const dailyDiff =
@@ -23,14 +49,14 @@ function compareAccounts(service: Service, a: Account, b: Account): number {
       limitSortTime(getLimit(a, "weekly")) -
       limitSortTime(getLimit(b, "weekly"));
     if (weeklyDiff !== 0) return weeklyDiff;
-    return a.name.localeCompare(b.name);
+    return a.email.localeCompare(b.email);
   }
 
   const generalDiff =
     limitSortTime(getLimit(a, "general")) -
     limitSortTime(getLimit(b, "general"));
   if (generalDiff !== 0) return generalDiff;
-  return a.name.localeCompare(b.name);
+  return a.email.localeCompare(b.email);
 }
 
 export function ServiceGroup({
@@ -44,7 +70,7 @@ export function ServiceGroup({
   onMoveUp,
   onDeleteService,
 }: ServiceGroupProps) {
-  const sorted = [...accounts].sort((a, b) => compareAccounts(service, a, b));
+  const groups = groupAccountsByLocalPart(service, accounts);
 
   return (
     <div className="border border-[var(--border)] rounded-xl p-7">
@@ -79,20 +105,24 @@ export function ServiceGroup({
           </button>
         </div>
       </div>
-      {sorted.length === 0 ? (
+      {groups.length === 0 ? (
         <p className="text-lg text-gray-400 py-3">No accounts yet</p>
       ) : (
-        <div>
-          {sorted.map((acc) => (
-            <AccountRow
-              key={acc.id}
-              account={acc}
-              limitMode={service.limitMode}
-              isActive={acc.id === service.activeAccountId}
-              onToggleActive={onToggleActive}
-              onEdit={onEditAccount}
-              onDelete={onDeleteAccount}
-            />
+        <div className="divide-y divide-[var(--border)]">
+          {groups.map((group, idx) => (
+            <div key={idx} className="py-1 first:pt-0 last:pb-0">
+              {group.map((acc) => (
+                <AccountRow
+                  key={acc.id}
+                  account={acc}
+                  limitMode={service.limitMode}
+                  isActive={acc.id === service.activeAccountId}
+                  onToggleActive={onToggleActive}
+                  onEdit={onEditAccount}
+                  onDelete={onDeleteAccount}
+                />
+              ))}
+            </div>
           ))}
         </div>
       )}

@@ -20,11 +20,24 @@ export interface Service {
   limitMode: LimitMode; // single = общий лимит, dailyWeekly = дневной + недельный
 }
 
+export type AccountStatus = "ACTIVE" | "BLOCKED" | "NOT_ELEGIBLE_FOR_FREE";
+
+export const ACCOUNT_STATUSES: AccountStatus[] = [
+  "ACTIVE",
+  "BLOCKED",
+  "NOT_ELEGIBLE_FOR_FREE",
+];
+
 export interface Account {
   id: string;
   serviceId: string;
-  name: string;
+  email: string;
+  password?: string;
+  status: AccountStatus;
+  tags: string[];
   limits: AccountLimits;
+  /** @deprecated migrated to email */
+  name?: string;
   /** @deprecated migrated to limits.general or limits.daily */
   usagePercent?: number;
   /** @deprecated migrated to limits.general or limits.daily */

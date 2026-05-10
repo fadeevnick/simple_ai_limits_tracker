@@ -1,5 +1,13 @@
 import { updateAccount, deleteAccount } from "@/lib/store";
-import type { AccountLimits, LimitState } from "@/lib/types";
+import type { AccountLimits, AccountStatus, LimitState } from "@/lib/types";
+
+function isAccountStatus(value: unknown): value is AccountStatus {
+  return (
+    value === "ACTIVE" ||
+    value === "BLOCKED" ||
+    value === "NOT_ELEGIBLE_FOR_FREE"
+  );
+}
 
 function isValidLimit(limit: LimitState | undefined): boolean {
   if (!limit) return true;
@@ -23,7 +31,23 @@ export async function PATCH(
   const { id } = await params;
   const body = await request.json();
   const updates: Record<string, unknown> = {};
-  if (body.name !== undefined) updates.name = body.name;
+  if (body.email !== undefined) updates.email = String(body.email).trim();
+  if (body.password !== undefined) updates.password = String(body.password);
+  if (body.status !== undefined) {
+    if (!isAccountStatus(body.status)) {
+      return Response.json({ error: "invalid status" }, { status: 400 });
+    }
+    updates.status = body.status;
+  }
+  if (body.tags !== undefined) {
+    if (!Array.isArray(body.tags)) {
+      return Response.json(
+        { error: "tags must be an array" },
+        { status: 400 },
+      );
+    }
+    updates.tags = body.tags;
+  }
   if (body.usagePercent !== undefined) {
     const percent = Number(body.usagePercent);
     if (isNaN(percent) || percent < 0 || percent > 100) {
