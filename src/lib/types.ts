@@ -22,12 +22,12 @@ export interface Service {
   description: string;
 }
 
-export type AccountStatus = "ACTIVE" | "BLOCKED" | "NOT_ELEGIBLE_FOR_FREE";
+export type AccountStatus = "ACTIVE" | "BLOCKED" | "NOT_ELEGIBLE_FOR_ACTIVATION";
 
 export const ACCOUNT_STATUSES: AccountStatus[] = [
   "ACTIVE",
   "BLOCKED",
-  "NOT_ELEGIBLE_FOR_FREE",
+  "NOT_ELEGIBLE_FOR_ACTIVATION",
 ];
 
 export interface Account {

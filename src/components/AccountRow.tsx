@@ -1,7 +1,7 @@
 import { Account, LimitKind, LimitMode, LimitState } from "@/lib/types";
 import { formatTimeLeft } from "@/lib/time";
 import { getDisplayLimit } from "@/lib/limits";
-import { statusColorClass } from "@/lib/accountStatus";
+import { statusPillClass } from "@/lib/accountStatus";
 
 interface AccountRowProps {
   account: Account;
@@ -13,17 +13,27 @@ interface AccountRowProps {
 }
 
 function getBarColor(percent: number) {
-  if (percent >= 80) return "bg-red-500/70";
-  if (percent >= 50) return "bg-yellow-500/70";
-  return "bg-[var(--fill)]/50";
+  if (percent >= 80) return "bg-red-500";
+  if (percent >= 50) return "bg-amber-500";
+  return "bg-[var(--fill)]";
 }
 
 function renderLifetime(lifetimeEndsAt: string | undefined) {
-  if (!lifetimeEndsAt) return "not set";
-  if (new Date(lifetimeEndsAt).getTime() < Date.now()) {
-    return <span className="text-red-500">expired</span>;
+  if (!lifetimeEndsAt) {
+    return (
+      <span className="text-base text-[var(--text-faint)] font-normal">
+        not set
+      </span>
+    );
   }
-  return formatTimeLeft(lifetimeEndsAt);
+  if (new Date(lifetimeEndsAt).getTime() < Date.now()) {
+    return <span className="text-red-600 font-bold">expired</span>;
+  }
+  return (
+    <span className="text-[var(--text-bright)] font-bold">
+      {formatTimeLeft(lifetimeEndsAt)}
+    </span>
+  );
 }
 
 function timeLabel(limit: LimitState) {
@@ -36,22 +46,22 @@ function LimitBar({ label, limit }: { label?: string; limit: LimitState }) {
   return (
     <div className="flex items-center gap-4 flex-1 min-w-0">
       {label && (
-        <span className="text-sm uppercase tracking-wide text-gray-400 w-16">
+        <span className="text-sm uppercase tracking-wider text-[var(--text-muted)] w-16 font-bold">
           {label}
         </span>
       )}
-      <div className="flex-1 h-2.5 bg-[var(--tab-inactive)] rounded-full overflow-hidden">
+      <div className="flex-1 h-3.5 bg-[var(--track)] rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all duration-500 ${getBarColor(limit.usagePercent)}`}
           style={{ width: `${limit.usagePercent}%` }}
         />
       </div>
       <span
-        className={`text-base font-mono w-14 text-right ${limit.usagePercent >= 100 ? "text-red-500 font-semibold" : "text-gray-500"}`}
+        className={`text-xl font-mono tabular-nums font-bold w-16 text-right ${limit.usagePercent >= 100 ? "text-red-600" : "text-[var(--text-bright)]"}`}
       >
         {limit.usagePercent}%
       </span>
-      <span className="text-base font-mono w-32 text-right">
+      <span className="text-base font-mono tabular-nums w-32 text-right text-[var(--text-bright)] font-medium">
         {timeLabel(limit)}
       </span>
     </div>
@@ -77,7 +87,11 @@ export function AccountRow({
   onDelete,
 }: AccountRowProps) {
   const isFull = accountIsFull(account, limitMode);
-  const rowClass = `flex items-center gap-5 py-4 cursor-pointer rounded-lg px-3 -mx-3 transition-colors ${isActive ? "bg-[var(--fill)]/15 border-l-2 border-[var(--fill)]" : "hover:bg-[var(--hover)]"} ${isFull ? "opacity-50" : ""}`;
+  const rowClass = `flex items-center gap-6 py-5 px-4 cursor-pointer rounded-lg transition-colors ${
+    isActive
+      ? "bg-[var(--primary)]/[0.06] ring-1 ring-inset ring-[var(--primary)]/20"
+      : "hover:bg-[var(--hover)]"
+  } ${isFull ? "opacity-55" : ""}`;
 
   const renderLimit = (kind: LimitKind, label?: string) => (
     <LimitBar label={label} limit={getDisplayLimit(account, kind)} />
@@ -85,55 +99,78 @@ export function AccountRow({
 
   return (
     <div className={rowClass} onClick={() => onToggleActive(account.id)}>
-      <div className="w-[28rem] min-w-0">
-        <div
-          className={`text-lg truncate ${isFull ? "line-through text-gray-400" : ""}`}
-        >
-          {account.email}
-        </div>
-        <div
-          className={`text-xs font-mono mt-0.5 truncate ${statusColorClass(account.status)}`}
-        >
-          {account.status}
+      {/* Identity column */}
+      <div className="w-72 min-w-0 shrink-0">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <span
+            className={`text-lg font-semibold text-[var(--text-bright)] truncate ${isFull ? "line-through text-[var(--text-faint)]" : ""}`}
+            title={account.email}
+          >
+            {account.email}
+          </span>
+          <span
+            className={`shrink-0 text-[11px] font-semibold px-2 py-0.5 rounded-md border uppercase tracking-wider ${statusPillClass(account.status)}`}
+          >
+            {account.status}
+          </span>
         </div>
         {account.tags && account.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
+          <div className="flex flex-wrap gap-1.5 mt-2">
             {account.tags.map((tag) => (
               <span
                 key={tag}
-                className="text-xs px-2 py-0.5 rounded-full bg-[var(--tab-inactive)] text-gray-600 border border-[var(--border)]"
+                className="text-xs px-2 py-0.5 rounded-md bg-[var(--surface-soft)] text-[var(--text-muted)] border border-[var(--border)]"
               >
                 {tag}
               </span>
             ))}
           </div>
         )}
-        <div className="text-xs text-gray-500 mt-1 truncate">
-          Lifetime — {renderLifetime(account.lifetimeEndsAt)}
-        </div>
       </div>
 
-      {limitMode === "dailyWeekly" ? (
-        <div className="flex-1 space-y-2.5 min-w-0">
-          {renderLimit("daily", "daily")}
-          {renderLimit("weekly", "weekly")}
+      {/* Lifetime column — only when set */}
+      {account.lifetimeEndsAt && (
+        <div className="w-52 shrink-0">
+          <div className="text-sm uppercase tracking-wider text-[var(--text-muted)] font-bold mb-1.5">
+            Lifetime
+          </div>
+          <div className="text-xl font-mono tabular-nums">
+            {renderLifetime(account.lifetimeEndsAt)}
+          </div>
         </div>
-      ) : (
-        renderLimit("general")
       )}
 
-      <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+      {/* Limits column */}
+      <div className="flex-1 min-w-0">
+        <div className="text-sm uppercase tracking-wider text-[var(--text-muted)] font-bold mb-2">
+          {limitMode === "dailyWeekly" ? "Limits" : "Limit"}
+        </div>
+        {limitMode === "dailyWeekly" ? (
+          <div className="space-y-2.5">
+            {renderLimit("daily", "daily")}
+            {renderLimit("weekly", "weekly")}
+          </div>
+        ) : (
+          renderLimit("general")
+        )}
+      </div>
+
+      {/* Actions */}
+      <div
+        className="flex gap-2 shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           onClick={() => onEdit(account)}
-          className="px-4 py-2 text-base border border-[var(--border)] rounded-lg text-gray-600 hover:bg-[var(--hover)] hover:border-gray-400"
+          className="px-3.5 py-2 text-sm font-medium border border-[var(--border)] rounded-md text-[var(--text)] hover:bg-[var(--hover)] hover:border-[var(--border-strong)] transition-colors"
         >
-          edit
+          Edit
         </button>
         <button
           onClick={() => onDelete(account.id)}
-          className="px-4 py-2 text-base border border-[var(--border)] rounded-lg text-gray-600 hover:text-red-500 hover:border-red-500/30 hover:bg-red-50"
+          className="px-3.5 py-2 text-sm font-medium border border-[var(--border)] rounded-md text-[var(--text-muted)] hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-colors"
         >
-          del
+          Delete
         </button>
       </div>
     </div>

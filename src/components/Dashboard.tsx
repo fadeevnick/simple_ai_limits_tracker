@@ -220,33 +220,42 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="text-lg text-gray-500 text-center py-24">Loading...</div>
+      <div className="text-sm text-[var(--text-muted)] text-center py-24">
+        Loading…
+      </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-8 pt-7 pb-10">
-      <h1 className="text-4xl font-bold mb-6">Limits</h1>
+    <div className="max-w-[1280px] mx-auto px-8 pt-10 pb-16">
+      <header className="mb-8">
+        <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-bright)]">
+          Limits
+        </h1>
+        <p className="text-base text-[var(--text-muted)] mt-1.5">
+          Track AI service usage and life deadlines.
+        </p>
+      </header>
 
       {/* Tabs + primary action */}
       <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex gap-2">
+        <div className="inline-flex p-1 rounded-lg bg-[var(--surface-soft)] border border-[var(--border)]">
           <button
             onClick={() => setTab("ai")}
-            className={`px-6 py-3 text-base font-medium rounded-lg transition-colors ${
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
               tab === "ai"
-                ? "bg-[var(--primary)] text-[var(--primary-text)]"
-                : "bg-[var(--tab-inactive)] text-gray-600 hover:bg-[var(--tab-hover)]"
+                ? "bg-[var(--surface)] text-[var(--text-bright)] shadow-sm"
+                : "text-[var(--text-muted)] hover:text-[var(--text-bright)]"
             }`}
           >
             AI Limits
           </button>
           <button
             onClick={() => setTab("life")}
-            className={`px-6 py-3 text-base font-medium rounded-lg transition-colors ${
+            className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
               tab === "life"
-                ? "bg-[var(--primary)] text-[var(--primary-text)]"
-                : "bg-[var(--tab-inactive)] text-gray-600 hover:bg-[var(--tab-hover)]"
+                ? "bg-[var(--surface)] text-[var(--text-bright)] shadow-sm"
+                : "text-[var(--text-muted)] hover:text-[var(--text-bright)]"
             }`}
           >
             Life Limits
@@ -263,11 +272,11 @@ export default function Dashboard() {
       {tab === "ai" ? (
         <>
           {services.length === 0 ? (
-            <div className="text-lg text-center py-24 text-gray-400">
+            <div className="text-sm text-center py-24 text-[var(--text-faint)]">
               <p>No services yet. Add one to get started.</p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[...services]
                 .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
                 .map((service, idx) => (

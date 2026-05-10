@@ -10,11 +10,11 @@ export function ModalShell({
   if (!open) return null;
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[2px] p-4"
       onClick={onClose}
     >
       <div
-        className="bg-[var(--surface)] border border-[var(--border)] rounded-xl w-full max-w-lg"
+        className="bg-[var(--surface)] border border-[var(--border)] rounded-xl w-full max-w-xl shadow-2xl shadow-black/10"
         onClick={(e) => e.stopPropagation()}
       >
         {children}

@@ -5,7 +5,7 @@ function isAccountStatus(value: unknown): value is AccountStatus {
   return (
     value === "ACTIVE" ||
     value === "BLOCKED" ||
-    value === "NOT_ELEGIBLE_FOR_FREE"
+    value === "NOT_ELEGIBLE_FOR_ACTIVATION"
   );
 }
 

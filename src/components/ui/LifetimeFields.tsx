@@ -42,34 +42,43 @@ export function LifetimeFields({ value, onChange }: LifetimeFieldsProps) {
   const update = (patch: Partial<LifetimeData>) =>
     onChange({ ...value, ...patch });
 
+  const pillClass = (active: boolean) =>
+    `px-4 py-2 text-base rounded-md border transition-colors ${
+      active
+        ? "border-[var(--border-strong)] text-[var(--text-bright)] bg-[var(--surface-soft)]"
+        : "border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--hover)]"
+    }`;
+
   return (
     <div>
-      <label className="block text-base text-gray-500 mb-2">Lifetime</label>
-      <div className="flex gap-2 mb-3">
+      <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
+        Lifetime
+      </label>
+      <div className="flex gap-1.5 mb-2">
         <button
           type="button"
           onClick={() => update({ mode: "none" })}
-          className={`px-4 py-2 text-base rounded-lg border ${value.mode === "none" ? "border-gray-400 text-[var(--text-bright)] bg-[var(--hover)]" : "border-[var(--border)] text-gray-500"}`}
+          className={pillClass(value.mode === "none")}
         >
           none
         </button>
         <button
           type="button"
           onClick={() => update({ mode: "duration" })}
-          className={`px-4 py-2 text-base rounded-lg border ${value.mode === "duration" ? "border-gray-400 text-[var(--text-bright)] bg-[var(--hover)]" : "border-[var(--border)] text-gray-500"}`}
+          className={pillClass(value.mode === "duration")}
         >
           in
         </button>
         <button
           type="button"
           onClick={() => update({ mode: "date" })}
-          className={`px-4 py-2 text-base rounded-lg border ${value.mode === "date" ? "border-gray-400 text-[var(--text-bright)] bg-[var(--hover)]" : "border-[var(--border)] text-gray-500"}`}
+          className={pillClass(value.mode === "date")}
         >
           on
         </button>
       </div>
       {value.mode === "duration" && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Input
             type="text"
             inputMode="numeric"
@@ -80,7 +89,7 @@ export function LifetimeFields({ value, onChange }: LifetimeFieldsProps) {
               })
             }
           />
-          <span className="text-base text-gray-400">days</span>
+          <span className="text-base text-[var(--text-muted)] font-medium">days</span>
         </div>
       )}
       {value.mode === "date" && (

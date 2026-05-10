@@ -57,7 +57,9 @@ export function LifeLimitsTab() {
 
   if (loading)
     return (
-      <div className="text-lg text-gray-500 text-center py-24">Loading...</div>
+      <div className="text-sm text-[var(--text-muted)] text-center py-24">
+        Loading…
+      </div>
     );
 
   const sorted = [...limits].sort(
@@ -72,11 +74,11 @@ export function LifeLimitsTab() {
         </Button>
       </div>
       {sorted.length === 0 ? (
-        <div className="text-lg text-center py-24 text-gray-400">
+        <div className="text-sm text-center py-24 text-[var(--text-faint)]">
           <p>No events yet. Add one to get started.</p>
         </div>
       ) : (
-        <div className="border border-[var(--border)] rounded-xl p-7">
+        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-5 shadow-sm shadow-black/[0.02] divide-y divide-[var(--border)]">
           {sorted.map((l) => (
             <LifeLimitRow
               key={l.id}

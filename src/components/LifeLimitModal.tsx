@@ -47,11 +47,13 @@ export function LifeLimitModal({
   return (
     <ModalShell open={open} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="p-9">
-          <h3 className="text-3xl font-bold mb-8">{title}</h3>
-          <div className="space-y-6">
+        <div className="px-7 py-6">
+          <h3 className="text-2xl font-semibold tracking-tight text-[var(--text-bright)] mb-7">
+            {title}
+          </h3>
+          <div className="space-y-5">
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Event name
               </label>
               <Input
@@ -62,7 +64,7 @@ export function LifeLimitModal({
               />
             </div>
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Deadline
               </label>
               <Input
@@ -73,7 +75,7 @@ export function LifeLimitModal({
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 border-t border-[var(--border)] px-9 py-5">
+        <div className="flex items-center gap-2 border-t border-[var(--border)] bg-[var(--surface-soft)]/40 px-7 py-4 rounded-b-xl">
           {showDelete && onDelete && (
             <Button
               variant="danger"

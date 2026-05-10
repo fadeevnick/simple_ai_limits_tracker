@@ -80,11 +80,13 @@ export function ServiceModal({
   return (
     <ModalShell open={open} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="p-9 max-h-[75vh] overflow-y-auto">
-          <h3 className="text-3xl font-bold mb-8">{title}</h3>
-          <div className="space-y-6">
+        <div className="px-7 py-6 max-h-[78vh] overflow-y-auto">
+          <h3 className="text-2xl font-semibold tracking-tight text-[var(--text-bright)] mb-7">
+            {title}
+          </h3>
+          <div className="space-y-5">
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Service name
               </label>
               <Input
@@ -96,30 +98,30 @@ export function ServiceModal({
             </div>
 
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Description
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={4}
-                className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-lg px-4 py-3 text-base text-[var(--text-bright)] focus:outline-none focus:border-gray-400 resize-y"
+                rows={3}
+                className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-md px-3.5 py-2.5 text-base text-[var(--text-bright)] placeholder:text-[var(--text-faint)] focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/10 resize-y"
               />
             </div>
 
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Limit type
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
                   disabled={lockLimitMode}
                   onClick={() => setLimitMode("single")}
-                  className={`rounded-lg border px-5 py-4 text-left text-base disabled:opacity-50 disabled:cursor-not-allowed ${limitMode === "single" ? "border-gray-400 bg-[var(--hover)] text-[var(--text-bright)]" : "border-[var(--border)] text-gray-500"}`}
+                  className={`rounded-md border px-5 py-4 text-left text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${limitMode === "single" ? "border-[var(--border-strong)] bg-[var(--surface-soft)] text-[var(--text-bright)]" : "border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--hover)]"}`}
                 >
-                  <span className="block font-medium">Single</span>
-                  <span className="block text-sm opacity-70">
+                  <span className="block font-semibold">Single</span>
+                  <span className="block text-sm opacity-70 mt-1">
                     One shared reset
                   </span>
                 </button>
@@ -127,10 +129,10 @@ export function ServiceModal({
                   type="button"
                   disabled={lockLimitMode}
                   onClick={() => setLimitMode("dailyWeekly")}
-                  className={`rounded-lg border px-5 py-4 text-left text-base disabled:opacity-50 disabled:cursor-not-allowed ${limitMode === "dailyWeekly" ? "border-gray-400 bg-[var(--hover)] text-[var(--text-bright)]" : "border-[var(--border)] text-gray-500"}`}
+                  className={`rounded-md border px-5 py-4 text-left text-base transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${limitMode === "dailyWeekly" ? "border-[var(--border-strong)] bg-[var(--surface-soft)] text-[var(--text-bright)]" : "border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--hover)]"}`}
                 >
-                  <span className="block font-medium">Daily + weekly</span>
-                  <span className="block text-sm opacity-70">
+                  <span className="block font-semibold">Daily + weekly</span>
+                  <span className="block text-sm opacity-70 mt-1">
                     Two separate resets
                   </span>
                 </button>
@@ -140,7 +142,7 @@ export function ServiceModal({
             <LifetimeFields value={lifetime} onChange={setLifetime} />
           </div>
         </div>
-        <div className="flex justify-end gap-3 border-t border-[var(--border)] px-9 py-5">
+        <div className="flex justify-end gap-2 border-t border-[var(--border)] bg-[var(--surface-soft)]/40 px-7 py-4 rounded-b-xl">
           <Button type="button" onClick={onClose}>
             Cancel
           </Button>

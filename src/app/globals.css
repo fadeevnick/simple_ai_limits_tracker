@@ -7,33 +7,50 @@
 
 :root {
   /* Page */
-  --bg: #f4f4f0;
-  --text: #2a2a3a;
-  --text-bright: #1a1a2e;
+  --bg: #f6f5f1;
+  --text: #2f3038;
+  --text-bright: #15161d;
+  --text-muted: #757687;
+  --text-faint: #9a9bab;
 
   /* Surfaces */
   --surface: #ffffff;
-  --border: #d8d8e0;
+  --surface-soft: #ecebe5;
+  --border: #e2e1da;
+  --border-strong: #c9c8c0;
 
   /* Primary (buttons, active tab) */
-  --primary: #3a3a5c;
-  --primary-hover: #4a4a6c;
-  --primary-text: #f0f0f0;
+  --primary: #2c2d3a;
+  --primary-hover: #3a3b4a;
+  --primary-text: #f5f5f1;
 
   /* Interactive (hover states, inactive tab) */
-  --hover: #e8e8f0;
-  --tab-inactive: #e0e0e8;
-  --tab-hover: #d0d0d8;
+  --hover: #efeee8;
+  --tab-inactive: #e6e5df;
+  --tab-hover: #dcdbd4;
 
   /* Progress bar */
-  --track: #e0e0e8;
-  --fill: #5a5a8a;
+  --track: #e6e5df;
+  --fill: #4a4b6b;
+}
+
+html {
+  font-size: 16px;
 }
 
 body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans), system-ui, sans-serif;
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-text);
 }
 
 /* Range input */

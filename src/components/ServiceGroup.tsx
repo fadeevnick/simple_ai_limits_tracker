@@ -72,71 +72,84 @@ export function ServiceGroup({
   onMoveUp,
   onDeleteService,
 }: ServiceGroupProps) {
-  const groups = groupAccountsByLocalPart(service, accounts);
+  const visibleAccounts = accounts.filter((a) => a.status === "ACTIVE");
+  const groups = groupAccountsByLocalPart(service, visibleAccounts);
+
+  const lifetimeExpired =
+    !!service.lifetimeEndsAt &&
+    new Date(service.lifetimeEndsAt).getTime() < Date.now();
 
   return (
-    <div className="border border-[var(--border)] rounded-xl p-7">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-2xl font-bold">
+    <section className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 shadow-sm shadow-black/[0.02]">
+      <header className="flex items-start justify-between gap-4 mb-5 pb-4 border-b border-[var(--border)]">
+        <div className="min-w-0">
+          <h2 className="text-xl font-semibold tracking-tight text-[var(--text-bright)]">
             <Link
               href={`/services/${service.id}`}
-              className="hover:underline"
+              className="hover:underline underline-offset-4 decoration-[var(--border-strong)]"
             >
               {service.name}
             </Link>
           </h2>
-          <p className="text-sm text-gray-400 mt-1">
-            {service.limitMode === "dailyWeekly"
-              ? "daily + weekly"
-              : "single limit"}
+          <div className="flex items-center gap-4 mt-2 text-base">
+            <span className="uppercase text-xs tracking-wider font-bold text-[var(--text-muted)]">
+              {service.limitMode === "dailyWeekly"
+                ? "daily + weekly"
+                : "single limit"}
+            </span>
             {service.lifetimeEndsAt && (
               <>
-                {" · "}
-                <span
-                  className={
-                    new Date(service.lifetimeEndsAt).getTime() < Date.now()
-                      ? "text-red-500"
-                      : ""
-                  }
-                >
-                  lifetime:{" "}
-                  {new Date(service.lifetimeEndsAt).getTime() < Date.now()
-                    ? "expired"
-                    : formatTimeLeft(service.lifetimeEndsAt)}
+                <span className="text-[var(--text-faint)]">·</span>
+                <span className="flex items-baseline gap-2">
+                  <span className="text-xs uppercase tracking-wider font-bold text-[var(--text-muted)]">
+                    lifetime
+                  </span>
+                  <span
+                    className={`font-mono tabular-nums text-lg font-bold ${lifetimeExpired ? "text-red-600" : "text-[var(--text-bright)]"}`}
+                  >
+                    {lifetimeExpired
+                      ? "expired"
+                      : formatTimeLeft(service.lifetimeEndsAt)}
+                  </span>
                 </span>
               </>
             )}
-          </p>
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={() => onMoveUp(service.id)}
             disabled={isFirst}
-            className="px-4 py-2 text-base border border-[var(--border)] rounded-lg text-gray-500 hover:bg-[var(--hover)] hover:border-gray-400 disabled:opacity-30 disabled:pointer-events-none"
+            className="w-9 h-9 grid place-items-center text-base font-medium border border-[var(--border)] rounded-md text-[var(--text-muted)] hover:bg-[var(--hover)] hover:text-[var(--text-bright)] hover:border-[var(--border-strong)] disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            aria-label="Move up"
           >
             ↑
           </button>
           <button
             onClick={() => onAddAccount(service.id)}
-            className="px-5 py-2.5 text-base border border-[var(--border)] rounded-lg text-gray-500 hover:text-[var(--text-bright)] hover:border-gray-400"
+            className="px-4 py-2 text-sm font-medium border border-[var(--border)] rounded-md text-[var(--text)] hover:bg-[var(--hover)] hover:border-[var(--border-strong)] transition-colors"
           >
             + Account
           </button>
           <button
             onClick={() => onDeleteService(service.id)}
-            className="px-4 py-2 text-base border border-[var(--border)] rounded-lg text-gray-500 hover:text-red-500 hover:border-red-500/30"
+            className="px-3.5 py-2 text-sm font-medium border border-[var(--border)] rounded-md text-[var(--text-muted)] hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-colors"
           >
-            delete
+            Delete
           </button>
         </div>
-      </div>
+      </header>
       {groups.length === 0 ? (
-        <p className="text-lg text-gray-400 py-3">No accounts yet</p>
+        <p className="text-base text-[var(--text-faint)] py-6 text-center">
+          No accounts yet
+        </p>
       ) : (
-        <div className="divide-y divide-[var(--border)]">
+        <div className="space-y-4">
           {groups.map((group, idx) => (
-            <div key={idx} className="py-1 first:pt-0 last:pb-0">
+            <div
+              key={idx}
+              className="space-y-1 divide-y divide-[var(--border)]/60"
+            >
               {group.map((acc) => (
                 <AccountRow
                   key={acc.id}
@@ -152,6 +165,6 @@ export function ServiceGroup({
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }

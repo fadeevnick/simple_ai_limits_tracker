@@ -34,7 +34,7 @@ function isAccountStatus(value: unknown): value is AccountStatus {
   return (
     value === "ACTIVE" ||
     value === "BLOCKED" ||
-    value === "NOT_ELEGIBLE_FOR_FREE"
+    value === "NOT_ELEGIBLE_FOR_ACTIVATION"
   );
 }
 
@@ -79,6 +79,9 @@ function migrateStore(data: Partial<Store>): Store {
     }
     if (account.email === undefined) account.email = "";
     if (account.name !== undefined) delete account.name;
+    if ((account.status as string) === "NOT_ELEGIBLE_FOR_FREE") {
+      account.status = "NOT_ELEGIBLE_FOR_ACTIVATION";
+    }
     if (!isAccountStatus(account.status)) account.status = "ACTIVE";
     account.tags = Array.isArray(account.tags)
       ? account.tags.filter((t): t is string => typeof t === "string")

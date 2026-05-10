@@ -90,18 +90,21 @@ function modalDataToLimit(data: LimitModalData): LimitState {
 }
 
 function lifetimeBadge(lifetimeEndsAt?: string) {
-  if (!lifetimeEndsAt) return null;
+  if (!lifetimeEndsAt) {
+    return (
+      <span className="text-lg text-[var(--text-faint)] italic">not set</span>
+    );
+  }
   const expired = new Date(lifetimeEndsAt).getTime() < Date.now();
   return (
-    <div className="flex items-baseline gap-3">
-      <span className="text-base text-gray-500">Lifetime</span>
+    <div className="flex items-baseline gap-4 flex-wrap">
       <span
-        className={`text-lg font-mono ${expired ? "text-red-500" : "text-[var(--text-bright)]"}`}
+        className={`text-2xl font-mono tabular-nums font-bold ${expired ? "text-red-600" : "text-[var(--text-bright)]"}`}
       >
         {expired ? "expired" : formatTimeLeft(lifetimeEndsAt)}
       </span>
-      <span className="text-sm text-gray-400">
-        ({new Date(lifetimeEndsAt).toLocaleString()})
+      <span className="text-base text-[var(--text-muted)]">
+        {new Date(lifetimeEndsAt).toLocaleString()}
       </span>
     </div>
   );
@@ -239,93 +242,166 @@ export function ServiceDetail({ serviceId }: { serviceId: string }) {
 
   if (loading) {
     return (
-      <div className="text-lg text-gray-500 text-center py-24">Loading...</div>
+      <div className="text-sm text-[var(--text-muted)] text-center py-24">
+        Loading…
+      </div>
     );
   }
 
   if (notFound || !service) {
     return (
-      <div className="max-w-6xl mx-auto px-8 pt-7 pb-10">
-        <Link href="/" className="text-base text-gray-500 hover:underline">
+      <div className="max-w-[1280px] mx-auto px-8 pt-10 pb-16">
+        <Link
+          href="/"
+          className="text-sm text-[var(--text-muted)] hover:text-[var(--text-bright)] hover:underline"
+        >
           ← Back
         </Link>
-        <p className="mt-8 text-xl text-gray-400">Service not found.</p>
+        <p className="mt-8 text-base text-[var(--text-faint)]">
+          Service not found.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-8 pt-7 pb-10">
+    <div className="max-w-[1280px] mx-auto px-8 pt-8 pb-16">
       <Link
         href="/"
-        className="inline-block mb-6 text-base text-gray-500 hover:underline"
+        className="inline-flex items-center gap-1 mb-6 text-base text-[var(--text-muted)] hover:text-[var(--text-bright)] hover:underline"
       >
         ← All services
       </Link>
 
-      <div className="border border-[var(--border)] rounded-xl p-7 mb-6">
-        <div className="flex items-start justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-4xl font-bold">{service.name}</h1>
-            <p className="text-sm text-gray-400 mt-2">
+      <section className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-8 mb-4 shadow-sm shadow-black/[0.02]">
+        <div className="flex items-start justify-between gap-4 mb-6 pb-5 border-b border-[var(--border)]">
+          <div className="min-w-0">
+            <h1 className="text-3xl font-semibold tracking-tight text-[var(--text-bright)] truncate">
+              {service.name}
+            </h1>
+            <p className="text-xs uppercase tracking-wider font-semibold text-[var(--text-muted)] mt-2">
               {service.limitMode === "dailyWeekly"
                 ? "daily + weekly limits"
                 : "single limit"}
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={openEditService}>Edit</Button>
-            <Button variant="primary" onClick={openAddAccount}>
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={openEditService}
+              className="px-4 py-2 text-sm font-medium border border-[var(--border)] rounded-md text-[var(--text)] hover:bg-[var(--hover)] hover:border-[var(--border-strong)] transition-colors"
+            >
+              Edit
+            </button>
+            <button
+              onClick={openAddAccount}
+              className="px-4 py-2 text-sm font-medium bg-[var(--primary)] text-[var(--primary-text)] rounded-md hover:bg-[var(--primary-hover)] shadow-sm transition-colors"
+            >
               + Account
-            </Button>
+            </button>
           </div>
         </div>
 
-        <div className="space-y-2 mb-4">
-          {lifetimeBadge(service.lifetimeEndsAt) ?? (
-            <div className="text-base text-gray-500">
-              Lifetime — not set
-            </div>
+        <div className="grid grid-cols-[10rem_1fr] gap-x-8 gap-y-6">
+          {service.lifetimeEndsAt && (
+            <>
+              <div className="text-sm uppercase tracking-wider font-bold text-[var(--text-muted)] pt-1.5">
+                Lifetime
+              </div>
+              <div>{lifetimeBadge(service.lifetimeEndsAt)}</div>
+            </>
           )}
-        </div>
 
-        <div>
-          <div className="text-base text-gray-500 mb-1">Description</div>
-          {service.description ? (
-            <p className="text-base whitespace-pre-wrap text-[var(--text-bright)]">
-              {service.description}
-            </p>
-          ) : (
-            <p className="text-base text-gray-400 italic">No description</p>
-          )}
-        </div>
-      </div>
-
-      <div className="border border-[var(--border)] rounded-xl p-7">
-        <h2 className="text-2xl font-bold mb-4">
-          Accounts{" "}
-          <span className="text-base font-normal text-gray-400">
-            ({accounts.length})
-          </span>
-        </h2>
-        {accounts.length === 0 ? (
-          <p className="text-lg text-gray-400 py-3">No accounts yet</p>
-        ) : (
+          <div className="text-sm uppercase tracking-wider font-bold text-[var(--text-muted)] pt-1.5">
+            Description
+          </div>
           <div>
-            {accounts.map((acc) => (
-              <AccountRow
-                key={acc.id}
-                account={acc}
-                limitMode={limitMode}
-                isActive={acc.id === service.activeAccountId}
-                onToggleActive={toggleActiveAccount}
-                onEdit={openEditAccount}
-                onDelete={deleteAccount}
-              />
-            ))}
+            {service.description ? (
+              <p className="text-base whitespace-pre-wrap text-[var(--text-bright)] leading-relaxed">
+                {service.description}
+              </p>
+            ) : (
+              <p className="text-base text-[var(--text-faint)] italic">
+                No description
+              </p>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      </section>
+
+      {(() => {
+        const activeAccounts = accounts.filter((a) => a.status === "ACTIVE");
+        const blockedAccounts = accounts.filter(
+          (a) => a.status === "BLOCKED",
+        );
+        const notEligibleAccounts = accounts.filter(
+          (a) => a.status === "NOT_ELEGIBLE_FOR_ACTIVATION",
+        );
+
+        const compactSection = (title: string, list: typeof accounts) => (
+          <section className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 mt-4 shadow-sm shadow-black/[0.02]">
+            <h2 className="text-xl font-semibold tracking-tight text-[var(--text-bright)] mb-4 pb-4 border-b border-[var(--border)]">
+              {title}
+              <span className="ml-2 text-base font-normal text-[var(--text-faint)]">
+                {list.length}
+              </span>
+            </h2>
+            <ul className="divide-y divide-[var(--border)]/60">
+              {list.map((acc) => (
+                <li
+                  key={acc.id}
+                  className="flex items-center justify-between gap-4 py-3 px-2"
+                >
+                  <span className="text-base text-[var(--text-muted)] truncate">
+                    {acc.email}
+                  </span>
+                  <button
+                    onClick={() => openEditAccount(acc)}
+                    className="px-3 py-1.5 text-sm font-medium border border-[var(--border)] rounded-md text-[var(--text-muted)] hover:bg-[var(--hover)] hover:text-[var(--text-bright)] hover:border-[var(--border-strong)] transition-colors shrink-0"
+                  >
+                    Edit
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        );
+
+        return (
+          <>
+            <section className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6 shadow-sm shadow-black/[0.02]">
+              <h2 className="text-xl font-semibold tracking-tight text-[var(--text-bright)] mb-4 pb-4 border-b border-[var(--border)]">
+                Accounts
+                <span className="ml-2 text-base font-normal text-[var(--text-faint)]">
+                  {activeAccounts.length}
+                </span>
+              </h2>
+              {activeAccounts.length === 0 ? (
+                <p className="text-base text-[var(--text-faint)] py-6 text-center">
+                  No accounts yet
+                </p>
+              ) : (
+                <div className="divide-y divide-[var(--border)]/60">
+                  {activeAccounts.map((acc) => (
+                    <AccountRow
+                      key={acc.id}
+                      account={acc}
+                      limitMode={limitMode}
+                      isActive={acc.id === service.activeAccountId}
+                      onToggleActive={toggleActiveAccount}
+                      onEdit={openEditAccount}
+                      onDelete={deleteAccount}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {blockedAccounts.length > 0 && compactSection("Blocked", blockedAccounts)}
+            {notEligibleAccounts.length > 0 &&
+              compactSection("Not eligible for activation", notEligibleAccounts)}
+          </>
+        );
+      })()}
 
       <AccountModal
         open={accountModal.isOpen}

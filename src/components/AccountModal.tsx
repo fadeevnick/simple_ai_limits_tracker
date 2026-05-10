@@ -71,14 +71,17 @@ function LimitFields({
     onChange({ ...value, ...patch });
 
   return (
-    <div className="rounded-xl border border-[var(--border)] p-5">
-      <h4 className="text-lg font-semibold text-[var(--text-bright)] mb-4">
+    <div className="rounded-lg border border-[var(--border)] bg-[var(--surface-soft)]/40 p-4">
+      <h4 className="text-sm font-semibold tracking-wider uppercase text-[var(--text-muted)] mb-4">
         {title}
       </h4>
       <div className="space-y-5">
         <div>
-          <label className="block text-base text-gray-500 mb-2">
-            Usage — {value.usagePercent}%
+          <label className="flex items-baseline justify-between text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
+            <span>Usage</span>
+            <span className="font-mono tabular-nums text-lg text-[var(--text-bright)]">
+              {value.usagePercent}%
+            </span>
           </label>
           <input
             type="range"
@@ -91,25 +94,27 @@ function LimitFields({
         </div>
 
         <div>
-          <label className="block text-base text-gray-500 mb-2">Resets</label>
-          <div className="flex gap-2 mb-3">
+          <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
+            Resets
+          </label>
+          <div className="flex gap-2 mb-2">
             <button
               type="button"
               onClick={() => update({ resetMode: "duration" })}
-              className={`px-4 py-2 text-base rounded-lg border ${value.resetMode === "duration" ? "border-gray-400 text-[var(--text-bright)] bg-[var(--hover)]" : "border-[var(--border)] text-gray-500"}`}
+              className={`px-4 py-2 text-base rounded-md border transition-colors ${value.resetMode === "duration" ? "border-[var(--border-strong)] text-[var(--text-bright)] bg-[var(--surface)]" : "border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--hover)]"}`}
             >
               in
             </button>
             <button
               type="button"
               onClick={() => update({ resetMode: "date" })}
-              className={`px-4 py-2 text-base rounded-lg border ${value.resetMode === "date" ? "border-gray-400 text-[var(--text-bright)] bg-[var(--hover)]" : "border-[var(--border)] text-gray-500"}`}
+              className={`px-4 py-2 text-base rounded-md border transition-colors ${value.resetMode === "date" ? "border-[var(--border-strong)] text-[var(--text-bright)] bg-[var(--surface)]" : "border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--hover)]"}`}
             >
               on
             </button>
           </div>
           {value.resetMode === "duration" ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Input
                 type="text"
                 inputMode="numeric"
@@ -120,7 +125,7 @@ function LimitFields({
                   })
                 }
               />
-              <span className="text-base text-gray-400">d</span>
+              <span className="text-base text-[var(--text-muted)] font-medium">d</span>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -131,7 +136,7 @@ function LimitFields({
                   })
                 }
               />
-              <span className="text-base text-gray-400">h</span>
+              <span className="text-base text-[var(--text-muted)] font-medium">h</span>
               <Input
                 type="text"
                 inputMode="numeric"
@@ -142,7 +147,7 @@ function LimitFields({
                   })
                 }
               />
-              <span className="text-base text-gray-400">m</span>
+              <span className="text-base text-[var(--text-muted)] font-medium">m</span>
             </div>
           ) : (
             <Input
@@ -208,12 +213,14 @@ export function AccountModal({
   return (
     <ModalShell open={open} onClose={onClose}>
       <form onSubmit={handleSubmit}>
-        <div className="p-9 max-h-[75vh] overflow-y-auto">
-          <h3 className="text-3xl font-bold mb-8">{title}</h3>
+        <div className="px-7 py-6 max-h-[78vh] overflow-y-auto">
+          <h3 className="text-2xl font-semibold tracking-tight text-[var(--text-bright)] mb-7">
+            {title}
+          </h3>
 
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Account email
               </label>
               <Input
@@ -225,7 +232,7 @@ export function AccountModal({
             </div>
 
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Password
               </label>
               <Input
@@ -236,7 +243,7 @@ export function AccountModal({
             </div>
 
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Status
               </label>
               <div className="flex flex-wrap gap-2">
@@ -245,10 +252,10 @@ export function AccountModal({
                     key={s}
                     type="button"
                     onClick={() => setStatus(s)}
-                    className={`px-4 py-2 text-base rounded-lg border ${
+                    className={`px-4 py-2 text-sm font-medium rounded-md border transition-colors ${
                       status === s
-                        ? "border-gray-400 bg-[var(--hover)] text-[var(--text-bright)]"
-                        : "border-[var(--border)] text-gray-500"
+                        ? "border-[var(--border-strong)] bg-[var(--surface-soft)] text-[var(--text-bright)]"
+                        : "border-[var(--border)] text-[var(--text-muted)] hover:bg-[var(--hover)]"
                     }`}
                   >
                     {s}
@@ -258,7 +265,7 @@ export function AccountModal({
             </div>
 
             <div>
-              <label className="block text-base text-gray-500 mb-2">
+              <label className="block text-sm font-semibold uppercase tracking-wider text-[var(--text-muted)] mb-2">
                 Tags
               </label>
               <Input
@@ -294,7 +301,7 @@ export function AccountModal({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 border-t border-[var(--border)] px-9 py-5">
+        <div className="flex items-center gap-2 border-t border-[var(--border)] bg-[var(--surface-soft)]/40 px-7 py-4 rounded-b-xl">
           {showDelete && onDelete && (
             <Button
               variant="danger"
